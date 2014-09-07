@@ -1,0 +1,4 @@
+qmsgpack
+========
+
+MessagePack for Qt
