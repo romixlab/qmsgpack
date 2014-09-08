@@ -5,29 +5,52 @@
 /* parser functions:
  * QVariant _type_(quint8 *p, int &i);
  * parses some type, which data is stored at p
- *
+ * fill sz with type size
  */
 
 namespace MsgPackPrivate
 {
-/* data sizes for types from 0x7f to 0xe0
- * (without positive and negative fixint)
- ** fixed size types:
- * possible values: 1, 2, 3, 4, 5, 6, 9, 10, 18 - bytes
- * 254 - size is in next 1 byte
- * 253 - 2
- * 251 - 4
- ** ext formats:
- * 126 - size is in next byte + 1 type byte
- * 125 - 2 byte size + 1 type byte
- * 123 - 4 byte size + 1 type byte
- */
-
-    static quint8 data_sizes[96];
-
-    QVariant positive_fixint(quint8 *p);
-
-
+typedef QVariant (* type_parser_f)(quint8 *p, quint8 *end, int &sz);
+extern type_parser_f parsers[32];
+QVariant unpack(quint8 *p, quint8 *end);
+QVariant unpack_type(quint8 *p, quint8 *end, int &sz);
+QVariant unpack_positive_fixint(quint8 *p, quint8 *end, int &sz);
+QVariant unpack_negative_fixint(quint8 *p, quint8 *end, int &sz);
+QVariant unpack_fixmap(quint8 *p, quint8 *end, int &sz);
+QVariant unpack_fixarray(quint8 *p, quint8 *end, int &sz);
+QVariant unpack_fixstr(quint8 *p, quint8 *end, int &sz);
+QVariant unpack_nil(quint8 *p, quint8 *end, int &sz);
+QVariant unpack_never_used(quint8 *p, quint8 *end, int &sz);
+QVariant unpack_false(quint8 *p, quint8 *end, int &sz);
+QVariant unpack_true(quint8 *p, quint8 *end, int &sz);
+QVariant unpack_bin8(quint8 *p, quint8 *end, int &sz);
+QVariant unpack_bin16(quint8 *p, quint8 *end, int &sz);
+QVariant unpack_bin32(quint8 *p, quint8 *end, int &sz);
+QVariant unpack_ext8(quint8 *p, quint8 *end, int &sz);
+QVariant unpack_ext16(quint8 *p, quint8 *end, int &sz);
+QVariant unpack_ext32(quint8 *p, quint8 *end, int &sz);
+QVariant unpack_float32(quint8 *p, quint8 *end, int &sz);
+QVariant unpack_float64(quint8 *p, quint8 *end, int &sz);
+QVariant unpack_uint8(quint8 *p, quint8 *end, int &sz);
+QVariant unpack_uint16(quint8 *p, quint8 *end, int &sz);
+QVariant unpack_uint32(quint8 *p, quint8 *end, int &sz);
+QVariant unpack_uint64(quint8 *p, quint8 *end, int &sz);
+QVariant unpack_int8(quint8 *p, quint8 *end, int &sz);
+QVariant unpack_int16(quint8 *p, quint8 *end, int &sz);
+QVariant unpack_int32(quint8 *p, quint8 *end, int &sz);
+QVariant unpack_int64(quint8 *p, quint8 *end, int &sz);
+QVariant unpack_fixext1(quint8 *p, quint8 *end, int &sz);
+QVariant unpack_fixext2(quint8 *p, quint8 *end, int &sz);
+QVariant unpack_fixext4(quint8 *p, quint8 *end, int &sz);
+QVariant unpack_fixext8(quint8 *p, quint8 *end, int &sz);
+QVariant unpack_fixext16(quint8 *p, quint8 *end, int &sz);
+QVariant unpack_str8(quint8 *p, quint8 *end, int &sz);
+QVariant unpack_str16(quint8 *p, quint8 *end, int &sz);
+QVariant unpack_str32(quint8 *p, quint8 *end, int &sz);
+QVariant unpack_array16(quint8 *p, quint8 *end, int &sz);
+QVariant unpack_array32(quint8 *p, quint8 *end, int &sz);
+QVariant unpack_map16(quint8 *p, quint8 *end, int &sz);
+QVariant unpack_map32(quint8 *p, quint8 *end, int &sz);
 }
 
 #endif // MSGPACK_P_H

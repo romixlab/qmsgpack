@@ -6,7 +6,7 @@
 namespace MsgPack
 {
 
-    QVariantList deserialize(const QByteArray &data);
+    QVariant deserialize(const QByteArray &data);
 }
 
 #endif // MSGPACK_H
