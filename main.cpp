@@ -11,7 +11,7 @@ int main(int argc, char *argv[])
     QCoreApplication a(argc, argv);
 
     qDebug() << "MsgPack";
-    qDebug() << MsgPack::deserialize(QByteArray::fromHex("92cd0100cd0200"));
+    qDebug() << MsgPack::deserialize(QByteArray::fromHex("c403010203"));
 
     return a.exec();
 }
