@@ -1,4 +1,4 @@
-#include "msgpack_p.h"
+#include "unpack_p.h"
 #include <QDebug>
 
 MsgPackPrivate::type_parser_f MsgPackPrivate::unpackers[32] = {
@@ -30,8 +30,8 @@ QVariant MsgPackPrivate::unpack(quint8 *p, quint8 *end)
     if (p - end > 1)
         return QVariant();
 
-//    if (d.length() == 1)
-//        return d[0];
+    if (d.length() == 1)
+        return d[0];
     return d;
 }
 

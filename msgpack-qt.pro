@@ -17,8 +17,10 @@ TEMPLATE = app
 
 SOURCES += main.cpp \
     msgpack.cpp \
-    private/msgpack_p.cpp
+    private/pack_p.cpp \
+    private/unpack_p.cpp
 
 HEADERS += \
     msgpack.h \
-    private/msgpack_p.h
+    private/pack_p.h \
+    private/unpack_p.h
