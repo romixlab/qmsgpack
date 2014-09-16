@@ -16,13 +16,13 @@ QVariant MsgPack::unpack(const QByteArray &data)
 QByteArray MsgPack::pack(const QVariant &variant)
 {
     quint8 *p = 0;
-    quint8 *end = MsgPackPrivate::pack(variant, p, true);
+    quint8 *end = MsgPackPrivate::pack(variant, p, false);
     quint32 size = end - p;
     qDebug() << "size probe:" << size;
 
     QByteArray arr;
     arr.resize(size);
-    end = MsgPackPrivate::pack(variant, (quint8 *)arr.data(), false);
+    end = MsgPackPrivate::pack(variant, (quint8 *)arr.data(), true);
 
     return arr;
 }

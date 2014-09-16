@@ -23,4 +23,5 @@ SOURCES += main.cpp \
 HEADERS += \
     msgpack.h \
     private/pack_p.h \
-    private/unpack_p.h
+    private/unpack_p.h \
+    private/sysdep.h
