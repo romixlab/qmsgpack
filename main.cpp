@@ -16,6 +16,8 @@
 
 int main(int argc, char *argv[])
 {
+    Q_UNUSED(argc)
+    Q_UNUSED(argv)
     //QCoreApplication a(argc, argv);
 
 //    qDebug() << "MsgPack";
@@ -24,9 +26,15 @@ int main(int argc, char *argv[])
 
 
     QVariantList l;
-    l << "abcdefhijkabcdefhijkabcdefhijk12";
-    QByteArray arr = MsgPack::pack(l);
+    QVariantMap map;
+    map["key"] = "val";
+    map["key2"] = 123;
+    map["key3"] = 1.2;
+    l << map;
+    qDebug() << l[0].type();
+    QByteArray arr = MsgPack::pack(map);
     qDebug() << arr.toBase64();
+
 
     return 0;
     //return a.exec();

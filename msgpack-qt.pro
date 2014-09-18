@@ -24,4 +24,5 @@ HEADERS += \
     msgpack.h \
     private/pack_p.h \
     private/unpack_p.h \
-    private/sysdep.h
+    private/sysdep.h \
+    msgpack_common.h
