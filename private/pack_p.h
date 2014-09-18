@@ -7,9 +7,12 @@ namespace MsgPackPrivate {
 /* if wr (write) == false, packer just moves pointer forward
  *
  */
-
-QHash<int, MsgPack::pack_user_f> user_packers;
-
+typedef struct {
+    MsgPack::pack_user_f packer;
+    qint8 type;
+} packer_t;
+bool register_packer(QMetaType::Type q_type, qint8 msgpack_type, MsgPack::pack_user_f packer);
+extern QHash<QMetaType::Type, packer_t> user_packers;
 
 quint8 * pack(const QVariant &v, quint8 *p, bool wr);
 
@@ -24,6 +27,7 @@ quint8 * pack_string(const QString &str, quint8 *p, bool wr);
 quint8 * pack_double(double i, quint8 *p, bool wr);
 quint8 * pack_array(const QByteArray &arr, quint8 *p, bool wr);
 quint8 * pack_map(const QVariantMap &map, quint8 *p, bool wr);
+quint8 * pack_user(const QVariant &v, quint8 *p, bool wr);
 
 
 

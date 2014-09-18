@@ -1,5 +1,8 @@
 #include "pack_p.h"
 #include "private/sysdep.h"
+#include <QDebug>
+
+QHash<QMetaType::Type, MsgPackPrivate::packer_t> MsgPackPrivate::user_packers;
 
 quint8 *MsgPackPrivate::pack(const QVariant &v, quint8 *p, bool wr)
 {
@@ -24,6 +27,12 @@ quint8 *MsgPackPrivate::pack(const QVariant &v, quint8 *p, bool wr)
         p = pack_array(v.toByteArray(), p, wr);
     else if (t == QMetaType::QVariantMap)
         p = pack_map(v.toMap(), p, wr);
+    else {
+        if (user_packers.contains(t))
+            p = pack_user(v, p, wr);
+        else
+            qWarning() << "MsgPack::pack can't pack type:" << t;
+    }
 
     return p;
 }
@@ -232,4 +241,61 @@ quint8 *MsgPackPrivate::pack_map(const QVariantMap &map, quint8 *p, bool wr)
         p = pack(it.value(), p, wr);
     }
     return p;
+}
+
+
+bool MsgPackPrivate::register_packer(QMetaType::Type q_type, qint8 msgpack_type, MsgPack::pack_user_f packer)
+{
+    if (user_packers.contains(q_type))
+        return false;
+    packer_t p;
+    p.packer = packer;
+    p.type = msgpack_type;
+    user_packers.insert(q_type, p);
+    return true;
+}
+
+quint8 *MsgPackPrivate::pack_user(const QVariant &v, quint8 *p, bool wr)
+{
+    QMetaType::Type t = (QMetaType::Type)v.type() == QMetaType::User ?
+                (QMetaType::Type)v.userType() : (QMetaType::Type)v.type();
+    QByteArray data;
+    packer_t pt = user_packers[t];
+    quint32 len = pt.packer(v, data, wr);
+    if (len == 1) {
+        if (wr) *p = 0xd4;
+        p++;
+    } else if (len == 2) {
+        if (wr) *p = 0xd5;
+        p++;
+    } else if (len == 4) {
+        if (wr) *p = 0xd6;
+        p++;
+    } else if (len == 8) {
+        if (wr) *p = 0xd7;
+        p++;
+    } else if (len == 16) {
+        if (wr) *p = 0xd8;
+        p++;
+    } else if (len <= 255) {
+        if (wr) *p = 0xc7;
+        p++;
+        if (wr) *p = len;
+        p++;
+    } else if (len <= 65535) {
+        if (wr) *p = 0xc8;
+        p++;
+        if (wr) _msgpack_store16(p, len);
+        p += 2;
+    } else {
+        if (wr) *p = 0xc9;
+        p++;
+        if (wr) _msgpack_store32(p, len);
+        p += 4;
+    }
+    if (wr) *p = pt.type;
+    p++;
+    if (wr)
+        memcpy(p, data.data(), len);
+    return p += len;
 }

@@ -26,3 +26,9 @@ QByteArray MsgPack::pack(const QVariant &variant)
 
     return arr;
 }
+
+
+bool MsgPack::registerPacker(QMetaType::Type qType, qint8 msgpackType, MsgPack::pack_user_f packer)
+{
+    return MsgPackPrivate::register_packer(qType, msgpackType, packer);
+}

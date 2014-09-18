@@ -4,7 +4,7 @@
 #include <QVariant>
 
 namespace MsgPack {
-typedef quint8 * (pack_user_f)(const QVariant &t, quint8 *p, bool wr);
+typedef quint32 (*pack_user_f)(const QVariant &variant, QByteArray &data, bool write);
 }
 
 #endif // COMMON_H

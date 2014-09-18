@@ -2,8 +2,6 @@
 #define MSGPACK_P_H
 #include <QVariant>
 
-
-
 namespace MsgPackPrivate
 {
 /* unpack functions:
@@ -25,7 +23,6 @@ QVariant unpack_array_len(quint8 *p, quint32 &sz, quint32 len);
 quint32 unpack_uint8(quint8 *p);
 quint32 unpack_uint16(quint8 *p);
 quint32 unpack_uint32(quint8 *p);
-
 
 QVariant unpack_positive_fixint(quint8 *p, quint32 &sz);
 QVariant unpack_negative_fixint(quint8 *p, quint32 &sz);
