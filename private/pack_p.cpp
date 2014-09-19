@@ -246,8 +246,14 @@ quint8 *MsgPackPrivate::pack_map(const QVariantMap &map, quint8 *p, bool wr)
 
 bool MsgPackPrivate::register_packer(QMetaType::Type q_type, qint8 msgpack_type, MsgPack::pack_user_f packer)
 {
-    if (user_packers.contains(q_type))
+    if (user_packers.contains(q_type)) {
+        qWarning() << "MsgPack::packer for qtype" << q_type << "already exist";
         return false;
+    }
+    if (packer == 0) {
+        qWarning() << "MsgPack::packer for qtype" << q_type << "is invalid";
+        return false;
+    }
     packer_t p;
     p.packer = packer;
     p.type = msgpack_type;

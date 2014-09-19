@@ -15,6 +15,15 @@ quint32 packQPoint(const QVariant &variant, QByteArray &data, bool write)
     return 8;
 }
 
+QVariant unpackQPoint(QByteArray &data)
+{
+    QDataStream in(&data, QIODevice::ReadOnly);
+    in.setVersion(QDataStream::Qt_5_3);
+    QPoint p;
+    in >> p;
+    return p;
+}
+
 int main(int argc, char *argv[])
 {
     Q_UNUSED(argc)
@@ -22,12 +31,15 @@ int main(int argc, char *argv[])
     //QCoreApplication a(argc, argv);
 
     MsgPack::registerPacker(QMetaType::QPoint, 7, packQPoint);
+    MsgPack::registerUnpacker(7, unpackQPoint);
 
     QVariantList l;
 
-    l << QPoint(1, 2);
+    l << QPoint(12, 13);
     QByteArray arr = MsgPack::pack(l);
     qDebug() << arr.toBase64();
+
+    qDebug() << MsgPack::unpack(arr);
 
 
     return 0;
