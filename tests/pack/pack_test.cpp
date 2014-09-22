@@ -2,6 +2,7 @@
 #include <QByteArray>
 #include <QtTest>
 #include "msgpack.h"
+#include <limits>
 
 class PackTest : public QObject
 {
@@ -14,6 +15,13 @@ private Q_SLOTS:
     void test_integer16();
     void test_integer32();
     void test_integer64();
+    void test_float();
+    void test_str();
+    void test_bin();
+    void test_array();
+    void test_map();
+    void test_ext();
+    void test_mixed();
 };
 
 void PackTest::test_bool()
@@ -151,7 +159,7 @@ void PackTest::test_integer32()
 
 void PackTest::test_integer64()
 {
-    QByteArray arr = MsgPack::pack((quint64)4294967296);
+    QByteArray arr = MsgPack::pack((quint64)std::numeric_limits<quint32>::max() + 1);
     quint8 *p = (quint8 *)arr.data();
     QVERIFY(arr.size() == 9);
     QVERIFY(p[0] == 0xcf);
@@ -164,14 +172,14 @@ void PackTest::test_integer64()
     QVERIFY(p[7] == 0x00);
     QVERIFY(p[8] == 0x00);
 
-    arr = MsgPack::pack((quint64)18446744073709551615U);
+    arr = MsgPack::pack(std::numeric_limits<quint64>::max());
     p = (quint8 *)arr.data();
     QVERIFY(arr.size() == 9);
     QVERIFY(p[0] == 0xcf);
     for (int i = 1; i < 9; ++i)
         QVERIFY(p[i] == 0xff);
 
-    arr = MsgPack::pack((qint64)-2147483649);
+    arr = MsgPack::pack((qint64)std::numeric_limits<qint32>::min() - 1);
     p = (quint8 *)arr.data();
     QVERIFY(arr.size() == 9);
     QVERIFY(p[0] == 0xd3);
@@ -184,13 +192,302 @@ void PackTest::test_integer64()
     QVERIFY(p[7] == 0xff);
     QVERIFY(p[8] == 0xff);
 
-    arr = MsgPack::pack((qint64)-9223372036854775808);
+    arr = MsgPack::pack(std::numeric_limits<qint64>::min());
     p = (quint8 *)arr.data();
     QVERIFY(arr.size() == 9);
     QVERIFY(p[0] == 0xd3);
     QVERIFY(p[1] == 0x80);
     for (int i = 2; i < 9; ++i)
         QVERIFY(p[i] == 0x00);
+}
+
+void PackTest::test_float()
+{
+    QByteArray arr = MsgPack::pack(1.234567);
+    QVERIFY(arr.size() == 9);
+    quint8 *p = (quint8 *)arr.data();
+    QVERIFY(p[0] == 0xcb);
+    QVERIFY(p[1] == 0x3f);
+    QVERIFY(p[2] == 0xf3);
+    QVERIFY(p[3] == 0xc0);
+    QVERIFY(p[4] == 0xc9);
+    QVERIFY(p[5] == 0x53);
+    QVERIFY(p[6] == 0x9b);
+    QVERIFY(p[7] == 0x88);
+    QVERIFY(p[8] == 0x87);
+}
+
+void PackTest::test_str()
+{
+    QString str = QString::fromUtf8("msgpack rocks");
+    QByteArray arr = MsgPack::pack(str);
+    QVERIFY(arr.size() == 14);
+    quint8 *p = (quint8 *)arr.data();
+    QVERIFY(p[0] == (0xa0 | str.length()));
+    QVERIFY(memcmp(p + 1, str.toUtf8().data(), str.size()) == 0);
+
+    str = QString::fromUtf8(QByteArray(32, 'm'));
+    arr = MsgPack::pack(str);
+    QVERIFY(arr.size() == 32 + 2);
+    p = (quint8 *)arr.data();
+    QVERIFY(p[0] == 0xd9);
+    QVERIFY(p[1] == 32);
+    QVERIFY(memcmp(p + 2, str.toUtf8().data(), str.size()) == 0);
+
+    str = QString::fromUtf8(QByteArray(256, 's'));
+    arr = MsgPack::pack(str);
+    QVERIFY(arr.size() == 256 + 3);
+    p = (quint8 *)arr.data();
+    QVERIFY(p[0] == 0xda);
+    QVERIFY(p[1] == 0x01);
+    QVERIFY(p[2] == 0x00);
+    QVERIFY(memcmp(p + 3, str.toUtf8().data(), str.size()) == 0);
+
+    str = QString::fromUtf8(QByteArray(65536, 'g'));
+    arr = MsgPack::pack(str);
+    QVERIFY(arr.size() == 65536 + 5);
+    p = (quint8 *)arr.data();
+    QVERIFY(p[0] == 0xdb);
+    QVERIFY(p[1] == 0x00);
+    QVERIFY(p[2] == 0x01);
+    QVERIFY(p[3] == 0x00);
+    QVERIFY(p[4] == 0x00);
+    QVERIFY(memcmp(p + 5, str.toUtf8().data(), str.size()) == 0);
+}
+
+void PackTest::test_bin()
+{
+    QByteArray ba = QByteArray("msgpack");
+    QByteArray arr = MsgPack::pack(ba);
+    QVERIFY(arr.size() == ba.size() + 2);
+    quint8 *p = (quint8 *)arr.data();
+    QVERIFY(p[0] == 0xc4);
+    QVERIFY(p[1] == ba.size());
+    QVERIFY(memcmp(p + 2, ba.data(), ba.size()) == 0);
+
+    ba = QByteArray(256, 'r');
+    arr = MsgPack::pack(ba);
+    QVERIFY(arr.size() == ba.size() + 3);
+    p = (quint8 *)arr.data();
+    QVERIFY(p[0] == 0xc5);
+    QVERIFY(p[1] == 0x01);
+    QVERIFY(p[2] == 0x00);
+    QVERIFY(memcmp(p + 3, ba.data(), ba.size()) == 0);
+
+    ba = QByteArray(65536, 'r');
+    arr = MsgPack::pack(ba);
+    QVERIFY(arr.size() == ba.size() + 5);
+    p = (quint8 *)arr.data();
+    QVERIFY(p[0] == 0xc6);
+    QVERIFY(p[1] == 0x00);
+    QVERIFY(p[2] == 0x01);
+    QVERIFY(p[3] == 0x00);
+    QVERIFY(p[4] == 0x00);
+    QVERIFY(memcmp(p + 5, ba.data(), ba.size()) == 0);
+}
+
+void PackTest::test_array()
+{
+    QVariantList list;
+    list << 1 << 2 << 3;
+    QByteArray arr = MsgPack::pack(list);
+    QVERIFY(arr.size() == list.size() + 1);
+    quint8 *p = (quint8 *)arr.data();
+    QVERIFY(p[0] == (0x90 | list.size()));
+
+    for (int i = 0; i < 29; ++i)
+        list << 4;
+    arr = MsgPack::pack(list);
+    QVERIFY(arr.size() == list.size() + 3);
+    p = (quint8 *)arr.data();
+    QVERIFY(p[0] == 0xdc);
+    QVERIFY(p[1] == 0x00);
+    QVERIFY(p[2] == 0x20);
+
+    for (int i = 0; i < 65504; ++i)
+        list << 7;
+    arr = MsgPack::pack(list);
+    QVERIFY(arr.size() == list.size() + 5);
+    p = (quint8 *)arr.data();
+    QVERIFY(p[0] == 0xdd);
+    QVERIFY(p[1] == 0x00);
+    QVERIFY(p[2] == 0x01);
+    QVERIFY(p[3] == 0x00);
+    QVERIFY(p[4] == 0x00);
+}
+
+void PackTest::test_map()
+{
+    QVariantMap map;
+    map.insert(QString("%1").QString::arg(0, 5), "v");
+    QByteArray arr = MsgPack::pack(map);
+    QVERIFY(arr.size() == map.size() * 8 + 1);
+    quint8 *p = (quint8 *)arr.data();
+    QVERIFY(p[0] == (0x80 | map.size()));
+
+    for (int i = 1; i < 16; ++i)
+        map.insert(QString("%1").QString::arg(i, 5), "v");
+    arr = MsgPack::pack(map);
+    QVERIFY(arr.size() == map.size() * 8 + 3);
+    p = (quint8 *)arr.data();
+    QVERIFY(p[0] == 0xde);
+    QVERIFY(p[1] == 0x00);
+    QVERIFY(p[2] == 0x10);
+
+    for (int i = 16; i < 65536; ++i)
+        map.insert(QString("%1").QString::arg(i, 5), "v");
+    arr = MsgPack::pack(map);
+    QVERIFY(arr.size() == map.size() * 8 + 5);
+    p = (quint8 *)arr.data();
+    QVERIFY(p[0] == 0xdf);
+    QVERIFY(p[1] == 0x00);
+    QVERIFY(p[2] == 0x01);
+    QVERIFY(p[3] == 0x00);
+    QVERIFY(p[4] == 0x00);
+}
+
+class CustomType
+{
+public:
+    CustomType() {}
+    CustomType(const CustomType &other) { m_size = other.m_size; }
+    ~CustomType() {}
+
+    CustomType(int size) : m_size(size) {}
+
+    int size() { return m_size; }
+    void setSize(int size) { m_size = size; }
+private:
+    int m_size;
+};
+
+Q_DECLARE_METATYPE(CustomType)
+
+quint32 pack_custom_type(const QVariant &variant, QByteArray &data, bool write)
+{
+    CustomType ct = variant.value<CustomType>();
+    if (write) {
+        data.resize(ct.size());
+        quint8 *p = (quint8 *)data.data();
+        for (int i = 0; i < ct.size(); ++i)
+            p[i] = 7;
+    }
+
+    return ct.size();
+}
+
+void PackTest::test_ext()
+{
+    CustomType ct(1);
+    QVariant custom;
+    custom.setValue(ct);
+
+    MsgPack::registerPacker((QMetaType::Type)qMetaTypeId<CustomType>(),
+                            3, pack_custom_type);
+
+    QByteArray arr = MsgPack::pack(custom);
+    QVERIFY(arr.size() == 2 + ct.size());
+    quint8 *p = (quint8 *)arr.data();
+    QVERIFY(p[0] == 0xd4);
+    QVERIFY(p[1] == 0x03);
+    QVERIFY(p[2] == 0x07);
+
+    ct.setSize(2);
+    custom.setValue(ct);
+    arr = MsgPack::pack(custom);
+    QVERIFY(arr.size() == 2 + ct.size());
+    p = (quint8 *)arr.data();
+    QVERIFY(p[0] == 0xd5);
+    QVERIFY(p[1] == 0x03);
+    QVERIFY(p[2] == 0x07);
+    QVERIFY(p[3] == 0x07);
+
+    ct.setSize(4);
+    custom.setValue(ct);
+    arr = MsgPack::pack(custom);
+    QVERIFY(arr.size() == 2 + ct.size());
+    p = (quint8 *)arr.data();
+    QVERIFY(p[0] == 0xd6);
+    QVERIFY(p[1] == 0x03);
+    QVERIFY(p[2] == 0x07);
+    QVERIFY(p[3] == 0x07);
+    QVERIFY(p[4] == 0x07);
+    QVERIFY(p[5] == 0x07);
+
+    ct.setSize(8);
+    custom.setValue(ct);
+    arr = MsgPack::pack(custom);
+    QVERIFY(arr.size() == 2 + ct.size());
+    p = (quint8 *)arr.data();
+    QVERIFY(p[0] == 0xd7);
+    QVERIFY(p[1] == 0x03);
+    for (int i = 0; i < ct.size(); ++i)
+        QVERIFY(p[2 + i] = 0x07);
+
+    ct.setSize(16);
+    custom.setValue(ct);
+    arr = MsgPack::pack(custom);
+    QVERIFY(arr.size() == 2 + ct.size());
+    p = (quint8 *)arr.data();
+    QVERIFY(p[0] == 0xd8);
+    QVERIFY(p[1] == 0x03);
+    for (int i = 0; i < ct.size(); ++i)
+        QVERIFY(p[2 + i] = 0x07);
+
+    ct.setSize(3);
+    custom.setValue(ct);
+    arr = MsgPack::pack(custom);
+    QVERIFY(arr.size() == 3 + ct.size());
+    p = (quint8 *)arr.data();
+    QVERIFY(p[0] == 0xc7);
+    QVERIFY(p[1] == 0x03);
+    QVERIFY(p[2] == 0x03);
+    for (int i = 0; i < ct.size(); ++i)
+        QVERIFY(p[3 + i] = 0x07);
+
+    ct.setSize(256);
+    custom.setValue(ct);
+    arr = MsgPack::pack(custom);
+    QVERIFY(arr.size() == 4 + ct.size());
+    p = (quint8 *)arr.data();
+    QVERIFY(p[0] == 0xc8);
+    QVERIFY(p[1] == 0x01);
+    QVERIFY(p[2] == 0x00);
+    QVERIFY(p[3] == 0x03);
+    for (int i = 0; i < ct.size(); ++i)
+        QVERIFY(p[4 + i] = 0x07);
+
+    ct.setSize(65536);
+    custom.setValue(ct);
+    arr = MsgPack::pack(custom);
+    QVERIFY(arr.size() == 6 + ct.size());
+    p = (quint8 *)arr.data();
+    QVERIFY(p[0] == 0xc9);
+    QVERIFY(p[1] == 0x00);
+    QVERIFY(p[2] == 0x01);
+    QVERIFY(p[3] == 0x00);
+    QVERIFY(p[4] == 0x00);
+    QVERIFY(p[5] == 0x03);
+    for (int i = 0; i < ct.size(); ++i)
+        QVERIFY(p[6 + i] = 0x07);
+}
+
+void PackTest::test_mixed()
+{
+    QVariantMap map;
+//    map["booleans"] = QVariantList() << false << true;
+//    map["list2"] = QVariantList() << (QVariantList() << "abc" << "def")
+//                                  << (QVariantList() << "qwe" << "rty");
+//    map["integers"] = QVariantList() << 0 << 127 << -31 << 128 << 777;
+    map["bytearray"] = QByteArray("bytes");
+
+//    QVariantMap map2;
+//    map2["one"] = 1;
+//    map2["two"] = QVariantMap();
+//    map["map2"] = map2;
+
+    QByteArray arr = MsgPack::pack(map);
+    qDebug() << arr.toBase64();
 }
 
 QTEST_APPLESS_MAIN(PackTest)

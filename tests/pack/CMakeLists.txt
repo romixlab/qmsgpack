@@ -1,7 +1,7 @@
 set(QT_USE_QTTEST TRUE)
 
 if (NOT Qt5Core_FOUND)
-	include( $QT_USE_FILE} )
+	include( ${QT_USE_FILE} )
 endif()
 
 include(AddFileDependencies)

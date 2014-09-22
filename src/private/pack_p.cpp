@@ -122,18 +122,16 @@ quint8 *MsgPackPrivate::pack_list(const QVariantList &list, quint8 *p, bool wr)
     if (len <= 15) {
         if (wr) *p = 0x90 | len;
         p++;
+    } else if (len <= 65535) {
+        if (wr) *p = 0xdc;
+        p++;
+        if (wr) _msgpack_store16(p, len);
+        p += 2;
     } else {
-        if (len <= 65535) {
-            if (wr) *p = 0xdc;
-            p++;
-            _msgpack_store16(p, len);
-            p += 2;
-        } else {
-            if (wr) *p = 0xdd;
-            p++;
-            _msgpack_store32(p, len);
-            p += 4;
-        }
+        if (wr) *p = 0xdd;
+        p++;
+        if (wr) _msgpack_store32(p, len);
+        p += 4;
     }
     foreach (QVariant item, list)
         p = pack(item, p, wr);
