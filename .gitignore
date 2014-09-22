@@ -1,1 +1,4 @@
 *.pro.user
+build
+lib
+Makefile
