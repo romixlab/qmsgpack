@@ -281,7 +281,7 @@ quint8 * MsgPackPrivate::unpack_map_len(QVariant &v, quint8 *p, quint32 len)
 
     for (quint32 i = 0; i < len; ++i) {
         p = unpack_type(key, p);
-        p = unpack_true(val, p);
+        p = unpack_type(val, p);
 
         map.insert(key.toString(), val);
     }
