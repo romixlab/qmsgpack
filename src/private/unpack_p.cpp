@@ -100,7 +100,7 @@ quint8 * MsgPackPrivate::unpack_negative_fixint(QVariant &v, quint8 *p)
 quint8 * MsgPackPrivate::unpack_uint8(QVariant &v, quint8 *p)
 {
     v = (quint8)*(++p);
-    return p++;
+    return p + 1;
 }
 
 quint8 * MsgPackPrivate::unpack_uint16(QVariant &v, quint8 *p)
@@ -264,14 +264,14 @@ quint8 * MsgPackPrivate::unpack_array16(QVariant &v, quint8 *p)
 {
     p++;
     quint32 len = _msgpack_load16(quint32, p);
-    return unpack_array_len(v, p += 2, len);
+    return unpack_array_len(v, p + 2, len);
 }
 
 quint8 * MsgPackPrivate::unpack_array32(QVariant &v, quint8 *p)
 {
     p++;
     quint32 len = _msgpack_load32(quint32, p);
-    return unpack_array_len(v, p += 4, len);
+    return unpack_array_len(v, p + 4, len);
 }
 
 quint8 * MsgPackPrivate::unpack_map_len(QVariant &v, quint8 *p, quint32 len)
@@ -299,7 +299,7 @@ quint8 * MsgPackPrivate::unpack_map16(QVariant &v, quint8 *p)
 {
     p++;
     quint32 len = _msgpack_load16(quint32, p);
-    return unpack_map_len(v, p += 2, len);
+    return unpack_map_len(v, p + 2, len);
 }
 
 quint8 * MsgPackPrivate::unpack_map32(QVariant &v, quint8 *p)

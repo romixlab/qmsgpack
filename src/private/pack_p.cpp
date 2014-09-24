@@ -1,5 +1,6 @@
 #include "pack_p.h"
 #include "private/sysdep.h"
+#include <limits>
 #include <QDebug>
 
 QHash<QMetaType::Type, MsgPackPrivate::packer_t> MsgPackPrivate::user_packers;
@@ -10,7 +11,7 @@ quint8 *MsgPackPrivate::pack(const QVariant &v, quint8 *p, bool wr)
     if (t == QMetaType::Int)
         p = pack_int(v.toInt(), p, wr);
     else if (t == QMetaType::UInt)
-        p = pack_uint(v.toInt(), p, wr);
+        p = pack_uint(v.toUInt(), p, wr);
     else if (t == QMetaType::Bool)
         p = pack_bool(v, p, wr);
     else if (t == QMetaType::QString)
@@ -43,12 +44,14 @@ quint8 *MsgPackPrivate::pack_int(qint32 i, quint8 *p, bool wr)
         qint32 val = _msgpack_be32(i);
         if (wr) *p = *( (quint8 *)&val + 3 );
         p++;
-    } else if (i >= -128 && i <= 255) {
+    } else if (i >= std::numeric_limits<qint8>::min()
+               && i <= std::numeric_limits<quint8>::max()) {
         if (wr) *p = i > 0 ? 0xcc : 0xd0;
         p++;
         if (wr) *p = i;
         p++;
-    } else if (i >= -32768 && i <= 65535) {
+    } else if (i >= std::numeric_limits<qint16>::min() &&
+               i <= std::numeric_limits<quint16>::max()) {
         if (wr) *p = i > 0 ? 0xcd : 0xd1;
         p++;
         if (wr) _msgpack_store16(p, i);
@@ -69,12 +72,12 @@ quint8 *MsgPackPrivate::pack_uint(quint32 i, quint8 *p, bool wr)
         qint32 val = _msgpack_be32(i);
         if (wr) *p = *( (quint8 *)&val + 3 );
         p++;
-    } else if (i <= 255) {
+    } else if (i <= std::numeric_limits<quint8>::max()) {
         if (wr) *p = 0xcc;
         p++;
         if (wr) *p = i;
         p++;
-    } else if (i <= 65535) {
+    } else if (i <= std::numeric_limits<quint16>::max()) {
         if (wr) *p = 0xcd;
         p++;
         if (wr) _msgpack_store16(p, i);
@@ -91,22 +94,23 @@ quint8 *MsgPackPrivate::pack_uint(quint32 i, quint8 *p, bool wr)
 
 quint8 *MsgPackPrivate::pack_longlong(qint64 i, quint8 *p, bool wr)
 {
-    if (i >= -2147483648 && i <= 2147483647)
+    if (i >= std::numeric_limits<qint32>::min()
+            && i <= std::numeric_limits<quint32>::max())
         return p = pack_int(i, p, wr);
     if (wr) *p = 0xd3;
     p++;
     if (wr) _msgpack_store64(p, i);
-    return p += 8;
+    return p + 8;
 }
 
 quint8 *MsgPackPrivate::pack_ulonglong(quint64 i, quint8 *p, bool wr)
 {
-    if (i <= 4294967295)
+    if (i <= std::numeric_limits<quint32>::max())
         return pack_uint(i, p, wr);
     if (wr) *p = 0xcf;
     p++;
     if (wr) _msgpack_store64(p, i);
-    return p += 8;
+    return p + 8;
 }
 
 quint8 *MsgPackPrivate::pack_bool(const QVariant &v, quint8 *p, bool wr)
@@ -122,7 +126,7 @@ quint8 *MsgPackPrivate::pack_list(const QVariantList &list, quint8 *p, bool wr)
     if (len <= 15) {
         if (wr) *p = 0x90 | len;
         p++;
-    } else if (len <= 65535) {
+    } else if (len <= std::numeric_limits<quint16>::max()) {
         if (wr) *p = 0xdc;
         p++;
         if (wr) _msgpack_store16(p, len);
@@ -144,12 +148,12 @@ quint8 *MsgPackPrivate::pack_string(const QString &str, quint8 *p, bool wr)
     if (len <= 31) {
         if (wr) *p = 0xa0 | len;
         p++;
-    } else if (len <= 255) {
+    } else if (len <= std::numeric_limits<quint8>::max()) {
         if (wr) *p = 0xd9;
         p++;
         if (wr) *p = len;
         p++;
-    } else if (len <= 65535) {
+    } else if (len <= std::numeric_limits<quint16>::max()) {
         if (wr) *p = 0xda;
         p++;
         if (wr) _msgpack_store16(p, len);
@@ -161,9 +165,8 @@ quint8 *MsgPackPrivate::pack_string(const QString &str, quint8 *p, bool wr)
         p += 4;
     }
     if (wr) memcpy(p, str.toUtf8().data(), len);
-    p += len;
 
-    return p;
+    return p + len;
 }
 
 quint8 *MsgPackPrivate::pack_double(double i, quint8 *p, bool wr)
@@ -180,18 +183,18 @@ quint8 *MsgPackPrivate::pack_double(double i, quint8 *p, bool wr)
             *(p + i) = *(d + i);
 #endif
     }
-    return p += 8;
+    return p + 8;
 }
 
 quint8 *MsgPackPrivate::pack_array(const QByteArray &arr, quint8 *p, bool wr)
 {
     int len = arr.length();
-    if (len <= 255) {
+    if (len <= std::numeric_limits<quint8>::max()) {
         if (wr) *p = 0xc4;
         p++;
         if (wr) *p = len;
         p++;
-    } else if (len <= 65535) {
+    } else if (len <= std::numeric_limits<quint16>::max()) {
         if (wr) *p = 0xc5;
         p++;
         if (wr) _msgpack_store16(p, len);
@@ -220,7 +223,7 @@ quint8 *MsgPackPrivate::pack_map(const QVariantMap &map, quint8 *p, bool wr)
     if (len <= 15) {
         if (wr) *p = 0x80 | len;
         p++;
-    } else if (len <= 65535) {
+    } else if (len <= std::numeric_limits<quint16>::max()) {
         if (wr) *p = 0xde;
         p++;
         if (wr) _msgpack_store16(p, len);
@@ -281,12 +284,12 @@ quint8 *MsgPackPrivate::pack_user(const QVariant &v, quint8 *p, bool wr)
     } else if (len == 16) {
         if (wr) *p = 0xd8;
         p++;
-    } else if (len <= 255) {
+    } else if (len <= std::numeric_limits<quint8>::max()) {
         if (wr) *p = 0xc7;
         p++;
         if (wr) *p = len;
         p++;
-    } else if (len <= 65535) {
+    } else if (len <= std::numeric_limits<quint16>::max()) {
         if (wr) *p = 0xc8;
         p++;
         if (wr) _msgpack_store16(p, len);
