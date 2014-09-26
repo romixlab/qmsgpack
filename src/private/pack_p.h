@@ -22,15 +22,16 @@ quint8 * pack_longlong(qint64 i, quint8 *p, bool wr);
 quint8 * pack_ulonglong(quint64 i, quint8 *p, bool wr);
 
 quint8 * pack_bool(const QVariant &v, quint8 *p, bool wr);
+
+quint8 * pack_listlen(quint32 len, quint8 *p, bool wr);
 quint8 * pack_list(const QVariantList &list, quint8 *p, bool wr);
+quint8 * pack_stringlist(const QStringList &list, quint8 *p, bool wr);
+
 quint8 * pack_string(const QString &str, quint8 *p, bool wr);
 quint8 * pack_double(double i, quint8 *p, bool wr);
 quint8 * pack_array(const QByteArray &arr, quint8 *p, bool wr);
 quint8 * pack_map(const QVariantMap &map, quint8 *p, bool wr);
 quint8 * pack_user(const QVariant &v, quint8 *p, bool wr);
-
-
-
 }
 
 #endif // PACK_P_H

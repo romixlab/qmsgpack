@@ -11,8 +11,8 @@ QT       -= gui
 TARGET = qmsgpack
 CONFIG   -= app_bundle
 
-TEMPLATE = lib
-DEFINES += MSGPACK_MAKE_LIB
+TEMPLATE = app
+#DEFINES += MSGPACK_MAKE_LIB
 target.path = ../build
 INSTALLS += target
 QMAKE_CXXFLAGS += -fPIC
@@ -20,6 +20,7 @@ QMAKE_CXXFLAGS += -fPIC
 
 SOURCES += main.cpp \
     msgpack.cpp \
+    msgpack_common.cpp \
     private/pack_p.cpp \
     private/unpack_p.cpp
 

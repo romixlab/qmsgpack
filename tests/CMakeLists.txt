@@ -8,4 +8,8 @@ if (Qt5Core_FOUND)
 	set(TEST_LIBRARIES ${Qt5Test_LIBRARIES})
 endif ()
 
-add_subdirectory(pack)
+set(TEST_SUBDIRS pack unpack mixed)
+
+foreach(subdir ${TEST_SUBDIRS})
+	add_subdirectory(${subdir})
+endforeach()

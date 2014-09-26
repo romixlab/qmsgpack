@@ -1,4 +1,4 @@
-set(qmsgpack_srcs msgpack.cpp private/pack_p.cpp private/unpack_p.cpp)
+set(qmsgpack_srcs msgpack.cpp msgpack_common.cpp private/pack_p.cpp private/unpack_p.cpp)
 set(qmsgpack_headers msgpack.h msgpack_common.h msgpack_export.h)
 
 add_library(qmsgpack SHARED ${qmsgpack_srcs} ${qmsgpack_headers})
@@ -8,6 +8,11 @@ if (Qt5Core_FOUND)
 else ()
 	target_link_libraries(qmsgpack ${QT_LIBRARIES})
 endif ()
+
+configure_file(
+  "${CMAKE_CURRENT_SOURCE_DIR}/msgpack_common.h.in"
+  "${CMAKE_CURRENT_SOURCE_DIR}/msgpack_common.h"
+  IMMEDIATE @ONLY)
 
 if (NOT android)
 	set_target_properties(qmsgpack PROPERTIES

@@ -30,17 +30,27 @@ int main(int argc, char *argv[])
     Q_UNUSED(argv)
     //QCoreApplication a(argc, argv);
 
-    MsgPack::registerPacker(QMetaType::QPoint, 7, packQPoint);
-    MsgPack::registerUnpacker(7, unpackQPoint);
+    qDebug() << "msgpack v" << MsgPack::version();
 
-    QVariantList l;
+    QVariantMap map;
+    map["one"] = 1;
+    map["map"] = QVariantMap();
+//    map["booleans"] = QVariantList() << false << true;
+//    map["list2"] = QVariantList() << (QVariantList() << "abc" << "def")
+//                                  << (QVariantList() << "qwe" << "rty");
+    map["integers"] = QVariantList() << 0 << 127 << -31 << 128 << 777;
+//    map["bytearray"] = QByteArray("bytes");
 
-    l << QPoint(12, 13);
-    QByteArray arr = MsgPack::pack(l);
+//    QVariantMap map2;
+//    map2["one"] = 1;
+//    map2["two"] = QVariantMap();
+//    map["map2"] = map2;
+
+    QByteArray arr = MsgPack::pack(map);
+
+    QVariantMap um = MsgPack::unpack(arr).toMap();
+
     qDebug() << arr.toBase64();
-
-    qDebug() << MsgPack::unpack(arr);
-
 
     return 0;
     //return a.exec();

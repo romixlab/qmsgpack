@@ -3,6 +3,10 @@
 
 #include <QVariant>
 
+#define MSGPACK_MAJOR @QMSGPACK_MAJOR@
+#define MSGPACK_MINOR @QMSGPACK_MINOR@
+#define MSGPACK_VERSION @QMSGPACK_VERSION@
+
 namespace MsgPack {
 /**
  * pack some variant to byte array data
@@ -12,7 +16,9 @@ namespace MsgPack {
  */
 typedef quint32 (*pack_user_f)(const QVariant &variant, QByteArray &data, bool write);
 
-typedef QVariant (*unpack_user_f)(QByteArray &data);
+typedef QVariant (*unpack_user_f)(const QByteArray &data);
+
+QString version();
 }
 
 #endif // COMMON_H

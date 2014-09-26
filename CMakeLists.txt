@@ -14,8 +14,6 @@ if (WIN32)
 	set(CMAKE_DEBUG_POSTFIX "d")
 endif (WIN32)
 
-
-
 option (QT4_BUILD "BUild with Qt4")
 if (NOT QT4_BUILD)
 	find_package(Qt5Core QUIET)

@@ -352,24 +352,28 @@ quint8 * MsgPackPrivate::unpack_fixext16(QVariant &v, quint8 *p)
 
 quint8 * MsgPackPrivate::unpack_ext8(QVariant &v, quint8 *p)
 {
-    qint8 type = *(++p);
-    quint32 len = *(p++);
+    p++;
+    quint32 len = *(p);
+    p += 1;
+    qint8 type = *(p);
     return unpack_ext(v, p + 1, type, len);
 }
 
 quint8 * MsgPackPrivate::unpack_ext16(QVariant &v, quint8 *p)
 {
-    qint8 type = *(++p);
+    p++;
     quint32 len = _msgpack_load16(quint32, p);
     p += 2;
+    qint8 type = *(p);
     return unpack_ext(v, p + 1, type, len);
 }
 
 quint8 * MsgPackPrivate::unpack_ext32(QVariant &v, quint8 *p)
 {
-    qint8 type = *(++p);
+    p++;
     quint32 len = _msgpack_load32(quint32, p);
     p += 4;
+    qint8 type = *(p);
     return unpack_ext(v, p + 1, type, len);
 }
 

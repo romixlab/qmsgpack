@@ -18,6 +18,8 @@ quint8 *MsgPackPrivate::pack(const QVariant &v, quint8 *p, bool wr)
         p = pack_string(v.toString(), p, wr);
     else if (t == QMetaType::QVariantList)
         p = pack_list(v.toList(), p, wr);
+    else if (t == QMetaType::QStringList)
+        p = pack_stringlist(v.toStringList(), p, wr);
     else if (t == QMetaType::LongLong)
         p = pack_longlong(v.toLongLong(), p, wr);
     else if (t == QMetaType::ULongLong)
@@ -120,9 +122,8 @@ quint8 *MsgPackPrivate::pack_bool(const QVariant &v, quint8 *p, bool wr)
     return p + 1;
 }
 
-quint8 *MsgPackPrivate::pack_list(const QVariantList &list, quint8 *p, bool wr)
+quint8 *MsgPackPrivate::pack_listlen(quint32 len, quint8 *p, bool wr)
 {
-    int len = list.length();
     if (len <= 15) {
         if (wr) *p = 0x90 | len;
         p++;
@@ -137,8 +138,24 @@ quint8 *MsgPackPrivate::pack_list(const QVariantList &list, quint8 *p, bool wr)
         if (wr) _msgpack_store32(p, len);
         p += 4;
     }
+    return p;
+}
+
+quint8 *MsgPackPrivate::pack_list(const QVariantList &list, quint8 *p, bool wr)
+{
+    int len = list.length();
+    p = pack_listlen(len, p, wr);
     foreach (QVariant item, list)
         p = pack(item, p, wr);
+    return p;
+}
+
+quint8 *MsgPackPrivate::pack_stringlist(const QStringList &list, quint8 *p, bool wr)
+{
+    int len = list.length();
+    p = pack_listlen(len, p, wr);
+    foreach (QString item, list)
+        p = pack_string(item, p, wr);
     return p;
 }
 
@@ -306,3 +323,4 @@ quint8 *MsgPackPrivate::pack_user(const QVariant &v, quint8 *p, bool wr)
         memcpy(p, data.data(), len);
     return p += len;
 }
+
