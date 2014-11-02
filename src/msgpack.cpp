@@ -1,5 +1,4 @@
 #include "msgpack.h"
-#include <QDebug>
 #include "private/unpack_p.h"
 #include "private/pack_p.h"
 #include <QByteArray>
@@ -11,7 +10,6 @@ QVariant MsgPack::unpack(const QByteArray &data)
 
     return MsgPackPrivate::unpack(p, end);
 }
-
 
 QByteArray MsgPack::pack(const QVariant &variant)
 {
@@ -27,14 +25,17 @@ QByteArray MsgPack::pack(const QVariant &variant)
     return arr;
 }
 
-
 bool MsgPack::registerPacker(QMetaType::Type qType, qint8 msgpackType, MsgPack::pack_user_f packer)
 {
     return MsgPackPrivate::register_packer(qType, msgpackType, packer);
 }
 
-
 bool MsgPack::registerUnpacker(qint8 msgpackType, MsgPack::unpack_user_f unpacker)
 {
     return MsgPackPrivate::register_unpacker(msgpackType, unpacker);
+}
+
+void MsgPack::setCompatibilityModeEnabled(bool enabled)
+{
+    MsgPackPrivate::compatibilityMode = enabled;
 }

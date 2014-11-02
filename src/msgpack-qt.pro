@@ -11,15 +11,19 @@ QT       -= gui
 TARGET = qmsgpack
 CONFIG   -= app_bundle
 
-TEMPLATE = app
-#DEFINES += MSGPACK_MAKE_LIB
-target.path = ../build
+TEMPLATE = lib
+DEFINES += MSGPACK_MAKE_LIB
+DESTDIR = $$_PRO_FILE_PWD_/../bin
 INSTALLS += target
 QMAKE_CXXFLAGS += -fPIC
 
+CONFIG   += debug_and_release
+CONFIG(debug, debug|release) {
+     TARGET = $$join(TARGET,,,d)
+}
 
-SOURCES += main.cpp \
-    msgpack.cpp \
+
+SOURCES += msgpack.cpp \
     msgpack_common.cpp \
     private/pack_p.cpp \
     private/unpack_p.cpp

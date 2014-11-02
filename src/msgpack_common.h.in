@@ -15,9 +15,14 @@ namespace MsgPack {
  * return type size
  */
 typedef quint32 (*pack_user_f)(const QVariant &variant, QByteArray &data, bool write);
-
+/**
+ * unpack user type to QVariant
+ */
 typedef QVariant (*unpack_user_f)(const QByteArray &data);
-
+/**
+ * @brief version
+ * @return current version
+ */
 QString version();
 }
 

@@ -4,6 +4,7 @@
 #include <QDebug>
 
 QHash<QMetaType::Type, MsgPackPrivate::packer_t> MsgPackPrivate::user_packers;
+bool MsgPackPrivate::compatibilityMode = false;
 
 quint8 *MsgPackPrivate::pack(const QVariant &v, quint8 *p, bool wr)
 {
@@ -17,7 +18,7 @@ quint8 *MsgPackPrivate::pack(const QVariant &v, quint8 *p, bool wr)
     else if (t == QMetaType::QString)
         p = pack_string(v.toString(), p, wr);
     else if (t == QMetaType::QVariantList)
-        p = pack_list(v.toList(), p, wr);
+        p = pack_array(v.toList(), p, wr);
     else if (t == QMetaType::QStringList)
         p = pack_stringlist(v.toStringList(), p, wr);
     else if (t == QMetaType::LongLong)
@@ -27,7 +28,7 @@ quint8 *MsgPackPrivate::pack(const QVariant &v, quint8 *p, bool wr)
     else if (t == QMetaType::Double)
         p = pack_double(v.toDouble(), p, wr);
     else if (t == QMetaType::QByteArray)
-        p = pack_array(v.toByteArray(), p, wr);
+        p = pack_bin(v.toByteArray(), p, wr);
     else if (t == QMetaType::QVariantMap)
         p = pack_map(v.toMap(), p, wr);
     else {
@@ -122,7 +123,7 @@ quint8 *MsgPackPrivate::pack_bool(const QVariant &v, quint8 *p, bool wr)
     return p + 1;
 }
 
-quint8 *MsgPackPrivate::pack_listlen(quint32 len, quint8 *p, bool wr)
+quint8 *MsgPackPrivate::pack_arraylen(quint32 len, quint8 *p, bool wr)
 {
     if (len <= 15) {
         if (wr) *p = 0x90 | len;
@@ -141,10 +142,10 @@ quint8 *MsgPackPrivate::pack_listlen(quint32 len, quint8 *p, bool wr)
     return p;
 }
 
-quint8 *MsgPackPrivate::pack_list(const QVariantList &list, quint8 *p, bool wr)
+quint8 *MsgPackPrivate::pack_array(const QVariantList &list, quint8 *p, bool wr)
 {
     int len = list.length();
-    p = pack_listlen(len, p, wr);
+    p = pack_arraylen(len, p, wr);
     foreach (QVariant item, list)
         p = pack(item, p, wr);
     return p;
@@ -153,7 +154,7 @@ quint8 *MsgPackPrivate::pack_list(const QVariantList &list, quint8 *p, bool wr)
 quint8 *MsgPackPrivate::pack_stringlist(const QStringList &list, quint8 *p, bool wr)
 {
     int len = list.length();
-    p = pack_listlen(len, p, wr);
+    p = pack_arraylen(len, p, wr);
     foreach (QString item, list)
         p = pack_string(item, p, wr);
     return p;
@@ -165,7 +166,8 @@ quint8 *MsgPackPrivate::pack_string(const QString &str, quint8 *p, bool wr)
     if (len <= 31) {
         if (wr) *p = 0xa0 | len;
         p++;
-    } else if (len <= std::numeric_limits<quint8>::max()) {
+    } else if (len <= std::numeric_limits<quint8>::max() &&
+               compatibilityMode == false) {
         if (wr) *p = 0xd9;
         p++;
         if (wr) *p = len;
@@ -203,21 +205,22 @@ quint8 *MsgPackPrivate::pack_double(double i, quint8 *p, bool wr)
     return p + 8;
 }
 
-quint8 *MsgPackPrivate::pack_array(const QByteArray &arr, quint8 *p, bool wr)
+quint8 *MsgPackPrivate::pack_bin(const QByteArray &arr, quint8 *p, bool wr)
 {
     int len = arr.length();
-    if (len <= std::numeric_limits<quint8>::max()) {
+    if (len <= std::numeric_limits<quint8>::max() &&
+            compatibilityMode == false) {
         if (wr) *p = 0xc4;
         p++;
         if (wr) *p = len;
         p++;
     } else if (len <= std::numeric_limits<quint16>::max()) {
-        if (wr) *p = 0xc5;
+        if (wr) *p = compatibilityMode ? 0xc5 : 0xda;
         p++;
         if (wr) _msgpack_store16(p, len);
         p += 2;
     } else {
-        if (wr) *p = 0xc6;
+        if (wr) *p = compatibilityMode ? 0xc6 : 0xdb;
         p++;
         if (wr) _msgpack_store32(p, len);
         p += 4;

@@ -4,7 +4,7 @@
 #include <QVariant>
 
 #define MSGPACK_MAJOR 0
-#define MSGPACK_MINOR 0
+#define MSGPACK_MINOR 1
 #define MSGPACK_VERSION 0
 
 namespace MsgPack {
@@ -15,9 +15,14 @@ namespace MsgPack {
  * return type size
  */
 typedef quint32 (*pack_user_f)(const QVariant &variant, QByteArray &data, bool write);
-
+/**
+ * unpack user type to QVariant
+ */
 typedef QVariant (*unpack_user_f)(const QByteArray &data);
-
+/**
+ * @brief version
+ * @return current version
+ */
 QString version();
 }
 
