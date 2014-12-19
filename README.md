@@ -6,12 +6,12 @@ MessagePack for Qt
 Installation
 ------------
 Clone repository:
-~~~
+~~~bash
 git clone https://github.com/romixlab/msgpack-qt.git
 ~~~
 
 Run cmake:
-~~~
+~~~bash
 cd msgpack-qt
 mkdir build
 cd build
@@ -19,26 +19,26 @@ cmake ..
 ~~~
 
 Compile:
-~~~
+~~~bash
 make
 ~~~
 
 Run tests and install
-~~~
+~~~bash
 make tests install
 ~~~
 
 Sample usage
 ------------
 Packing
-~~~
+~~~cpp
 QVariantList list;
 list << 1 << 2 << 3;
 QByteArray array = MsgPack::pack(list);
 ~~~
 
 Unpacking:
-~~~
+~~~cpp
 QVariantList unpacked = MsgPack::unpack(array).toList();
 ~~~
 
