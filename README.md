@@ -7,12 +7,12 @@ Installation
 ------------
 Clone repository:
 ~~~bash
-git clone https://github.com/romixlab/msgpack-qt.git
+git clone https://github.com/romixlab/qmsgpack.git
 ~~~
 
 Run cmake:
 ~~~bash
-cd msgpack-qt
+cd qmsgpack
 mkdir build
 cd build
 cmake ..
