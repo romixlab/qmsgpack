@@ -208,19 +208,18 @@ quint8 *MsgPackPrivate::pack_double(double i, quint8 *p, bool wr)
 quint8 *MsgPackPrivate::pack_bin(const QByteArray &arr, quint8 *p, bool wr)
 {
     int len = arr.length();
-    if (len <= std::numeric_limits<quint8>::max() &&
-            compatibilityMode == false) {
-        if (wr) *p = 0xc4;
+    if (len <= std::numeric_limits<quint8>::max()) {
+        if (wr) *p = compatibilityMode ? 0xd9 : 0xc4;
         p++;
         if (wr) *p = len;
         p++;
     } else if (len <= std::numeric_limits<quint16>::max()) {
-        if (wr) *p = compatibilityMode ? 0xc5 : 0xda;
+        if (wr) *p = compatibilityMode ? 0xda : 0xc5;
         p++;
         if (wr) _msgpack_store16(p, len);
         p += 2;
     } else {
-        if (wr) *p = compatibilityMode ? 0xc6 : 0xdb;
+        if (wr) *p = compatibilityMode ? 0xdb : 0xc6;
         p++;
         if (wr) _msgpack_store32(p, len);
         p += 4;
