@@ -42,6 +42,11 @@ Unpacking:
 QVariantList unpacked = MsgPack::unpack(array).toList();
 ~~~
 
-By default these Qt types are supported: Int, UInt, LongLong, ULongLong, Double, QByteArray, Bool, QString, QStringList, QVariantList, QVariantMap.
+By default these Qt types are supported: `Int, UInt, LongLong, ULongLong, Double, QByteArray, Bool, QString, QStringList, QVariantList, QVariantMap`.
 
-Also you can provide packer and unpacker functions for any other type (even for user type defined via  Q_DECLARE_METATYPE) or MsgPack type.
+Also you can provide packer and unpacker functions for any other type (even for user type defined via `Q_DECLARE_METATYPE`) or MsgPack type.
+
+Thread-safety
+-------------
+At this time it is not thread safe to call `MsgPack::registerPacker`, `MsgPack::registerUnpacker` and `MsgPack::setCompatibilityModeEnabled` from different threads.
+pack and unpack methods do not use any global data, so
