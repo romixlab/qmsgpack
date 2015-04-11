@@ -1,6 +1,9 @@
 #include "unpack_p.h"
 #include "sysdep.h"
+
+#include <QByteArray>
 #include <QDebug>
+#include <QMap>
 
 MsgPackPrivate::type_parser_f MsgPackPrivate::unpackers[32] = {
     unpack_nil,

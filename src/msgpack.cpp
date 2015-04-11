@@ -1,7 +1,7 @@
 #include "msgpack.h"
+#include "msgpack_common.h"
 #include "private/unpack_p.h"
 #include "private/pack_p.h"
-#include <QByteArray>
 
 QVariant MsgPack::unpack(const QByteArray &data)
 {

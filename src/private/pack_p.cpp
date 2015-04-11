@@ -1,7 +1,13 @@
 #include "pack_p.h"
 #include "private/sysdep.h"
-#include <limits>
+
+#include <QByteArray>
 #include <QDebug>
+#include <QMapIterator>
+#include <QString>
+#include <QStringList>
+
+#include <limits>
 
 QHash<QMetaType::Type, MsgPackPrivate::packer_t> MsgPackPrivate::user_packers;
 bool MsgPackPrivate::compatibilityMode = false;
