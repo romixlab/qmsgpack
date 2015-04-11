@@ -10,7 +10,9 @@ env:
 
 before_install:
  - sudo add-apt-repository --yes ppa:ubuntu-sdk-team/ppa
+ - sudo add-apt-repository --yes ppa:george-edison55/cmake-3.x
  - sudo apt-get update -qq
+ - sudo apt-get upgrade -y cmake
  - sudo apt-get install -qq libqtcore4 qt4-qmake libqt5core5 qt5-qmake qt5-default qtchooser libmsgpack-dev
 
 script:
