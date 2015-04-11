@@ -48,5 +48,5 @@ Also you can provide packer and unpacker functions for any other type (even for 
 
 Thread-safety
 -------------
-At this time it is not thread safe to call `MsgPack::registerPacker`, `MsgPack::registerUnpacker` and `MsgPack::setCompatibilityModeEnabled` from different threads.
-pack and unpack methods do not use any global data, so
+At this time it is not safe to call `MsgPack::registerPacker`, `MsgPack::registerUnpacker` and `MsgPack::setCompatibilityModeEnabled` from different threads.
+pack and unpack methods do not use any global data, so should be safe to use from multiple threads.
