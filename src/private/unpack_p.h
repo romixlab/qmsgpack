@@ -1,7 +1,10 @@
 #ifndef MSGPACK_P_H
 #define MSGPACK_P_H
-#include <QVariant>
+
 #include "../msgpack_common.h"
+
+#include <QHash>
+#include <QVariant>
 
 namespace MsgPackPrivate
 {

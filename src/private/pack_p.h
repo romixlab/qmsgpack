@@ -1,7 +1,13 @@
 #ifndef PACK_P_H
 #define PACK_P_H
-#include <QVariant>
+
 #include "../msgpack_common.h"
+
+#include <QHash>
+#include <QMetaType>
+
+class QByteArray;
+class QString;
 
 namespace MsgPackPrivate {
 /* if wr (write) == false, packer just moves pointer forward
