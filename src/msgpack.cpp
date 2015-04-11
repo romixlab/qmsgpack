@@ -2,6 +2,7 @@
 #include "msgpack_common.h"
 #include "private/unpack_p.h"
 #include "private/pack_p.h"
+#include "private/qt_types_p.h"
 
 QVariant MsgPack::unpack(const QByteArray &data)
 {
@@ -33,6 +34,11 @@ bool MsgPack::registerPacker(QMetaType::Type qType, qint8 msgpackType, MsgPack::
 bool MsgPack::registerUnpacker(qint8 msgpackType, MsgPack::unpack_user_f unpacker)
 {
     return MsgPackPrivate::register_unpacker(msgpackType, unpacker);
+}
+
+bool MsgPack::registerType(QMetaType::Type qType, quint8 msgpackType)
+{
+    return MsgPackPrivate::register_qtype(qType, msgpackType);
 }
 
 void MsgPack::setCompatibilityModeEnabled(bool enabled)

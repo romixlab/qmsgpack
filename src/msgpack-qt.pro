@@ -6,7 +6,7 @@
 
 QT       += core
 
-QT       -= gui
+QT       += gui
 
 TARGET = qmsgpack
 CONFIG   -= app_bundle
@@ -26,7 +26,8 @@ CONFIG(debug, debug|release) {
 SOURCES += msgpack.cpp \
     msgpack_common.cpp \
     private/pack_p.cpp \
-    private/unpack_p.cpp
+    private/unpack_p.cpp \
+    private/qt_types_p.cpp
 
 HEADERS += \
     msgpack.h \
@@ -34,4 +35,5 @@ HEADERS += \
     private/unpack_p.h \
     private/sysdep.h \
     msgpack_common.h \
-    msgpack_export.h
+    msgpack_export.h \
+    private/qt_types_p.h

@@ -2,6 +2,7 @@
 #define COMMON_H
 
 #include <QVariant>
+#include <QtGlobal>
 
 #define MSGPACK_MAJOR 0
 #define MSGPACK_MINOR 1
@@ -24,6 +25,48 @@ typedef QVariant (*unpack_user_f)(const QByteArray &data);
  * @return current version
  */
 QString version();
+/**
+ * @brief The FirstByte enum
+ * From Message Pack spec
+ */
+namespace FirstByte {
+const quint8 POSITIVE_FIXINT = 0x00;
+const quint8 FIXMAP     = 0x80;
+const quint8 FIXARRAY   = 0x90;
+const quint8 FIXSTR     = 0xa0;
+const quint8 NIL        = 0xc0;
+const quint8 NEVER_USED = 0xc1;
+const quint8 FALSE      = 0xc2;
+const quint8 TRUE       = 0xc3;
+const quint8 BIN8       = 0xc4;
+const quint8 BIN16      = 0xc5;
+const quint8 BIN32      = 0xc6;
+const quint8 EXT8       = 0xc7;
+const quint8 EXT16      = 0xc8;
+const quint8 EXT32      = 0xc9;
+const quint8 FLOAT32	= 0xca;
+const quint8 FLOAT64	= 0xcb;
+const quint8 UINT8      = 0xcc;
+const quint8 UINT16 	= 0xcd;
+const quint8 UINT32     = 0xce;
+const quint8 UINT64 	= 0xcf;
+const quint8 INT8       = 0xd0;
+const quint8 INT16      = 0xd1;
+const quint8 INT32      = 0xd2;
+const quint8 INT64      = 0xd3;
+const quint8 FIXEXT1	= 0xd4;
+const quint8 FIXEXT2    = 0xd5;
+const quint8 FIXEXT4    = 0xd6;
+const quint8 FIXEXT8    = 0xd7;
+const quint8 FIXEX16    = 0xd8;
+const quint8 STR8       = 0xd9;
+const quint8 STR16      = 0xda;
+const quint8 STR32      = 0xdb;
+const quint8 ARRAY8     = 0xdc;
+const quint8 ARRAY16    = 0xdd;
+const quint8 MAP16      = 0xde;
+const quint8 MAP32      = 0xdf;
+const quint8 NEGATIVE_FIXINT = 0xe0;
 }
-
+}
 #endif // COMMON_H

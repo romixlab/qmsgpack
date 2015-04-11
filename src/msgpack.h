@@ -1,11 +1,9 @@
 #ifndef MSGPACK_H
 #define MSGPACK_H
-
+#include <QByteArray>
+#include <QVariantList>
 #include "msgpack_common.h"
 #include "msgpack_export.h"
-
-#include <QByteArray>
-#include <QMetaType>
 
 namespace MsgPack
 {
@@ -14,6 +12,8 @@ namespace MsgPack
 
     MSGPACK_EXPORT QByteArray pack(const QVariant &variant);
     MSGPACK_EXPORT bool registerPacker(QMetaType::Type qType, qint8 msgpackType, pack_user_f packer);
+
+    MSGPACK_EXPORT bool registerType(QMetaType::Type qType, quint8 msgpackType);
 
     MSGPACK_EXPORT void setCompatibilityModeEnabled(bool enabled);
 }
