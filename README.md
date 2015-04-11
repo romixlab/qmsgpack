@@ -1,4 +1,4 @@
-qmsgpack
+qmsgpack ![Build status](https://travis-ci.org/romixlab/qmsgpack.svg?branch=master)
 ========
 
 MessagePack for Qt
