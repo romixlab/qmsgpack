@@ -1,0 +1,21 @@
+language: cpp
+
+compiler:
+ - gcc
+ - clang
+
+env:
+ - QT4_BUILD=ON
+ - QT4_BUILD=OFF
+
+before_install:
+ - sudo add-apt-repository --yes ppa:ubuntu-sdk-team/ppa
+ - sudo apt-get update -qq
+ - sudo apt-get install -qq libqtcore4 qt4-qmake libqt5core5 qt5-qmake qt5-default qtchooser libmsgpack-dev
+
+script:
+ - mkdir build
+ - cd build
+ - cmake ..
+ - make
+ - make test
