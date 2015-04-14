@@ -5,6 +5,9 @@
 #include <QDebug>
 #include <QMap>
 
+#include <QReadLocker>
+#include <QWriteLocker>
+
 MsgPackPrivate::type_parser_f MsgPackPrivate::unpackers[32] = {
     unpack_nil,
     unpack_never_used,
@@ -315,14 +318,13 @@ quint8 * MsgPackPrivate::unpack_map32(QVariant &v, quint8 *p)
 
 quint8 *MsgPackPrivate::unpack_ext(QVariant &v, quint8 *p, qint8 type, quint32 len)
 {
-    unpackers_lock.lockForRead();
+    QReadLocker locker(&unpackers_lock);
     if (!user_unpackers.contains(type)) {
         qWarning() << "MsgPack::unpack() unpacker for type" << type << "doesn't exist";
         return p + len;
     }
     QByteArray data((char *)p, len);
-    v = user_unpackers[type](data);
-    unpackers_lock.unlock();
+    v = user_unpackers[type](data);s
     return p + len;
 }
 
@@ -389,13 +391,11 @@ bool MsgPackPrivate::register_unpacker(qint8 msgpack_type, MsgPack::unpack_user_
         qWarning() << "MsgPack::unpacker for type" << msgpack_type << "is invalid";
         return false;
     }
-    unpackers_lock.lockForWrite();
+    QWriteLocker locker(&unpackers_lock);
     if (user_unpackers.contains(msgpack_type)) {
         qWarning() << "MsgPack::unpacker for type" << msgpack_type << "already exists";
-        unpackers_lock.unlock();
         return false;
     }
     user_unpackers.insert(msgpack_type, unpacker);
-    unpackers_lock.unlock();
     return true;
 }
