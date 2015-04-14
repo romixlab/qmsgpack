@@ -324,7 +324,7 @@ quint8 *MsgPackPrivate::unpack_ext(QVariant &v, quint8 *p, qint8 type, quint32 l
         return p + len;
     }
     QByteArray data((char *)p, len);
-    v = user_unpackers[type](data);s
+    v = user_unpackers[type](data);
     return p + len;
 }
 
