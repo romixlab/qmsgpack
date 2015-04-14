@@ -5,6 +5,7 @@
 
 #include <QHash>
 #include <QMetaType>
+#include <QReadWriteLock>
 
 class QByteArray;
 class QString;
@@ -19,6 +20,7 @@ typedef struct {
 } packer_t;
 bool register_packer(QMetaType::Type q_type, qint8 msgpack_type, MsgPack::pack_user_f packer);
 extern QHash<QMetaType::Type, packer_t> user_packers;
+extern QReadWriteLock packers_lock;
 extern bool compatibilityMode;
 
 quint8 * pack(const QVariant &v, quint8 *p, bool wr);

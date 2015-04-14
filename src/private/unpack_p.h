@@ -5,6 +5,7 @@
 
 #include <QHash>
 #include <QVariant>
+#include <QReadWriteLock>
 
 namespace MsgPackPrivate
 {
@@ -19,6 +20,7 @@ extern type_parser_f unpackers[32];
 
 bool register_unpacker(qint8 msgpack_type, MsgPack::unpack_user_f unpacker);
 extern QHash<qint8, MsgPack::unpack_user_f> user_unpackers;
+extern QReadWriteLock unpackers_lock;
 
 // goes from p to end unpacking types with unpack_type function below
 QVariant unpack(quint8 *p, quint8 *end);

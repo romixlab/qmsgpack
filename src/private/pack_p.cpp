@@ -11,6 +11,7 @@
 
 QHash<QMetaType::Type, MsgPackPrivate::packer_t> MsgPackPrivate::user_packers;
 bool MsgPackPrivate::compatibilityMode = false;
+QReadWriteLock MsgPackPrivate::packers_lock;
 
 quint8 *MsgPackPrivate::pack(const QVariant &v, quint8 *p, bool wr)
 {
@@ -38,7 +39,12 @@ quint8 *MsgPackPrivate::pack(const QVariant &v, quint8 *p, bool wr)
     else if (t == QMetaType::QVariantMap)
         p = pack_map(v.toMap(), p, wr);
     else {
-        if (user_packers.contains(t))
+        if (t == QMetaType::User)
+            t = (QMetaType::Type)v.userType();
+        packers_lock.lockForRead();
+        bool has_packer = user_packers.contains(t);
+        packers_lock.unlock();
+        if (has_packer)
             p = pack_user(v, p, wr);
         else
             qWarning() << "MsgPack::pack can't pack type:" << t;
@@ -269,21 +275,23 @@ quint8 *MsgPackPrivate::pack_map(const QVariantMap &map, quint8 *p, bool wr)
     return p;
 }
 
-
 bool MsgPackPrivate::register_packer(QMetaType::Type q_type, qint8 msgpack_type, MsgPack::pack_user_f packer)
 {
-    if (user_packers.contains(q_type)) {
-        qWarning() << "MsgPack::packer for qtype" << q_type << "already exist";
-        return false;
-    }
     if (packer == 0) {
         qWarning() << "MsgPack::packer for qtype" << q_type << "is invalid";
+        return false;
+    }
+    packers_lock.lockForWrite();
+    if (user_packers.contains(q_type)) {
+        qWarning() << "MsgPack::packer for qtype" << q_type << "already exist";
+        packers_lock.unlock();
         return false;
     }
     packer_t p;
     p.packer = packer;
     p.type = msgpack_type;
     user_packers.insert(q_type, p);
+    packers_lock.unlock();
     return true;
 }
 
@@ -292,7 +300,9 @@ quint8 *MsgPackPrivate::pack_user(const QVariant &v, quint8 *p, bool wr)
     QMetaType::Type t = (QMetaType::Type)v.type() == QMetaType::User ?
                 (QMetaType::Type)v.userType() : (QMetaType::Type)v.type();
     QByteArray data;
+    packers_lock.lockForRead();
     packer_t pt = user_packers[t];
+    packers_lock.unlock();
     quint32 len = pt.packer(v, data, wr);
     if (len == 1) {
         if (wr) *p = 0xd4;
@@ -331,4 +341,3 @@ quint8 *MsgPackPrivate::pack_user(const QVariant &v, quint8 *p, bool wr)
         memcpy(p, data.data(), len);
     return p += len;
 }
-

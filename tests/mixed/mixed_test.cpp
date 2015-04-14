@@ -90,9 +90,11 @@ void MixedTest::test_ext()
     QVariant custom;
     custom.setValue(ct);
 
-    MsgPack::registerPacker((QMetaType::Type)qMetaTypeId<CustomType>(),
+    bool packer_registered = MsgPack::registerPacker((QMetaType::Type)qMetaTypeId<CustomType>(),
                             3, pack_custom_type);
-    MsgPack::registerUnpacker(3, unpack_custom_type);
+    QVERIFY(packer_registered);
+    bool unpacker_registered = MsgPack::registerUnpacker(3, unpack_custom_type);
+    QVERIFY(unpacker_registered);
 
     QByteArray arr = MsgPack::pack(custom);
     QVERIFY(arr.size() == 2 + ct.size());
