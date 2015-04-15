@@ -11,6 +11,7 @@
 #define NO_QTGUI_WARNING "Library built without QtGui, hence some types are not available"
 
 #include <QTime>
+#include <QPoint>
 
 bool MsgPackPrivate::register_qtype(QMetaType::Type q_type, quint8 msgpack_type)
 {

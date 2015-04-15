@@ -30,7 +30,7 @@ QString version();
  * From Message Pack spec
  */
 namespace FirstByte {
-const quint8 POSITIVE_FIXINT = 0x00;
+const quint8 POSITIVE_FIXINT = 0x7f;
 const quint8 FIXMAP     = 0x80;
 const quint8 FIXARRAY   = 0x90;
 const quint8 FIXSTR     = 0xa0;

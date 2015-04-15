@@ -147,7 +147,7 @@ quint8 * MsgPackPrivate::unpack_int16(QVariant &v, quint8 *p)
 quint8 * MsgPackPrivate::unpack_int32(QVariant &v, quint8 *p)
 {
     p++;
-    v = _msgpack_load32(quint32, p);
+    v = _msgpack_load32(qint32, p);
     return p + 4;
 }
 
