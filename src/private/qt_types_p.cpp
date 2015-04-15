@@ -132,3 +132,28 @@ QVariant MsgPackPrivate::unpack_qdatetime(const QByteArray &data)
     QTime t = unpack_qtime_raw(p + 3);
     return QDateTime(d, t);
 }
+
+// Points and Vectors
+quint32 MsgPackPrivate::pack_qpoint(const QVariant &variant, QByteArray &data, bool write)
+{
+    QPoint pt = variant.toPoint();
+    quint8 *p = 0;
+    if (write) {
+        p = (quint8 *)data.data();
+        p = MsgPackPrivate::pack_int(pt.x(), p, false);
+        p = MsgPackPrivate::pack_int(pt.y(), p, false);
+        return data.size(); // ok since it already resized
+    } else {
+        p = MsgPackPrivate::pack_int(pt.x(), p, false);
+        p = MsgPackPrivate::pack_int(pt.y(), p, false);
+        return p - (quint8 *)0;
+    }
+}
+
+QVariant MsgPackPrivate::unpack_qpoint(const QByteArray &data)
+{
+    quint8 *p = (quint8 *)data.data();
+    QVariant v;
+    p = (MsgPackPrivate::unpackers[*p - 0xc0])(v, p);
+    
+}

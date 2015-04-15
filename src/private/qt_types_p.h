@@ -27,6 +27,10 @@ QVariant unpack_qdate(const QByteArray &data);
 quint32 pack_qdatetime(const QVariant &variant, QByteArray &data, bool write);
 QVariant unpack_qdatetime(const QByteArray &data);
 
+// Points and Vectors
+quint32 pack_qpoint(const QVariant &variant, QByteArray &data, bool write);
+QVariant unpack_qpoint(const QByteArray &data);
+
 
 } // MsgPackPrivate
 
