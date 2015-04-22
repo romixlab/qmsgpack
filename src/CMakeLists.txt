@@ -1,5 +1,5 @@
-set(qmsgpack_srcs msgpack.cpp msgpack_common.cpp private/pack_p.cpp private/unpack_p.cpp private/qt_types_p.cpp)
-set(qmsgpack_headers msgpack.h msgpack_common.h msgpack_export.h)
+set(qmsgpack_srcs msgpack.cpp msgpack_common.cpp msgpack_ext.cpp private/pack_p.cpp private/unpack_p.cpp private/qt_types_p.cpp)
+set(qmsgpack_headers msgpack.h msgpack_common.h msgpack_ext.h msgpack_export.h)
 
 add_library(qmsgpack SHARED ${qmsgpack_srcs} ${qmsgpack_headers})
 
