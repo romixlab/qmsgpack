@@ -28,7 +28,6 @@ SOURCES += msgpack.cpp \
     private/pack_p.cpp \
     private/unpack_p.cpp \
     private/qt_types_p.cpp \
-    msgpack_ext.cpp \
     stream.cpp
 
 HEADERS += \
@@ -39,5 +38,4 @@ HEADERS += \
     msgpack_common.h \
     msgpack_export.h \
     private/qt_types_p.h \
-    msgpack_ext.h \
     stream.h
