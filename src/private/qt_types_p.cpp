@@ -46,18 +46,17 @@ bool MsgPackPrivate::register_qtype(QMetaType::Type q_type, quint8 msgpack_type)
 }
 
 #ifdef QT_GUI_LIB
-quint32 MsgPackPrivate::pack_qcolor(const QVariant &variant, QByteArray &data, bool write)
+QByteArray MsgPackPrivate::pack_qcolor(const QVariant &variant)
 {
-    if (write) {
-        QColor color = variant.value<QColor>();
-        data.resize(4);
-        quint8 *p = (quint8 *)data.data();
-        p[0] = color.red();
-        p[1] = color.green();
-        p[2] = color.blue();
-        p[3] = color.alpha();
-    }
-    return 4; // 4 bytes: r,g,b,a
+    QByteArray data;
+    data.resize(4);
+    QColor color = variant.value<QColor>();
+    quint8 *p = (quint8 *)data.data();
+    p[0] = color.red();
+    p[1] = color.green();
+    p[2] = color.blue();
+    p[3] = color.alpha();
+    return data;
 }
 
 QVariant MsgPackPrivate::unpack_qcolor(const QByteArray &data)
@@ -96,15 +95,14 @@ QTime MsgPackPrivate::unpack_qtime_raw(quint8 *p, bool with_ms)
     return QTime(h, m, s, ms);
 }
 
-quint32 MsgPackPrivate::pack_qtime(const QVariant &variant, QByteArray &data, bool write)
+QByteArray MsgPackPrivate::pack_qtime(const QVariant &variant)
 {
     QTime time = variant.toTime();
     quint8 size = time.msec() == 0 ? 2 : 4;
-    if (write) {
-        data.resize(size);
-        pack_qtime_raw(time, (quint8 *)data.data());
-    }
-    return size;
+    QByteArray data;
+    data.resize(size);
+    pack_qtime_raw(time, (quint8 *)data.data());
+    return data;
 }
 
 QVariant MsgPackPrivate::unpack_qtime(const QByteArray &data)
@@ -134,13 +132,12 @@ QDate MsgPackPrivate::unpack_qdate_raw(quint8 *p)
     return QDate(year, month, day);
 }
 
-quint32 MsgPackPrivate::pack_qdate(const QVariant &variant, QByteArray &data, bool write)
+QByteArray MsgPackPrivate::pack_qdate(const QVariant &variant)
 {
-    if (write) {
-        data.resize(3);
-        pack_qdate_raw(variant.toDate(), (quint8 *)data.data());
-    }
-    return 3;
+    QByteArray data;
+    data.resize(3);
+    pack_qdate_raw(variant.toDate(), (quint8 *)data.data());
+    return data;
 }
 
 QVariant MsgPackPrivate::unpack_qdate(const QByteArray &data)
@@ -148,18 +145,17 @@ QVariant MsgPackPrivate::unpack_qdate(const QByteArray &data)
     return unpack_qdate_raw((quint8 *)data.data());
 }
 
-quint32 MsgPackPrivate::pack_qdatetime(const QVariant &variant, QByteArray &data, bool write)
+QByteArray MsgPackPrivate::pack_qdatetime(const QVariant &variant)
 {
     QDateTime dt = variant.toDateTime();
     quint8 time_size = dt.time().msec() == 0 ? 2 : 4;
-    if (write) {
-        data.resize(3 + time_size);
-        quint8 *p = (quint8 *)data.data();
-        pack_qdate_raw(dt.date(), p);
-        p += 3;
-        pack_qtime_raw(dt.time(), p);
-    }
-    return 3 + time_size; // 3 for date, 4 for time
+    QByteArray data;
+    data.resize(3 + time_size);
+    quint8 *p = (quint8 *)data.data();
+    pack_qdate_raw(dt.date(), p);
+    p += 3;
+    pack_qtime_raw(dt.time(), p);
+    return data;
 }
 
 QVariant MsgPackPrivate::unpack_qdatetime(const QByteArray &data)
@@ -171,20 +167,7 @@ QVariant MsgPackPrivate::unpack_qdatetime(const QByteArray &data)
 }
 
 // Points and Vectors
-quint8 MsgPackPrivate::pack_two_integers(qint32 a, qint32 b, quint8 *to, bool write)
-{
-    quint8 *p = 0;
-    p = MsgPackPrivate::pack_int(a, p, false);
-    p = MsgPackPrivate::pack_int(b, p, false);
-    quint8 size = p - (quint8 *)0;
-    if (write) {
-        to = MsgPackPrivate::pack_int(a, to, true);
-        MsgPackPrivate::pack_int(b, to, true);
-    }
-    return size;
-}
-
-quint32 MsgPackPrivate::pack_qpoint(const QVariant &variant, QByteArray &data, bool write)
+QByteArray MsgPackPrivate::pack_qpoint(const QVariant &variant)
 {
     // QPoint pt = variant.toPoint();
     // quint8 size = pack_two_integers(pt.x(), pt.y(), 0, false);
@@ -208,7 +191,7 @@ QVariant MsgPackPrivate::unpack_qpoint(const QByteArray &data)
     // return pt;
 }
 
-quint32 MsgPackPrivate::pack_qsize(const QVariant &variant, QByteArray &data, bool write)
+QByteArray MsgPackPrivate::pack_qsize(const QVariant &variant)
 {
     // QSize sz = variant.toSize();
     // quint8 size = pack_two_integers(sz.width(), sz.height(), 0, false);
@@ -232,7 +215,7 @@ QVariant MsgPackPrivate::unpack_qsize(const QByteArray &data)
     // return sz;
 }
 
-quint32 MsgPackPrivate::pack_qrect(const QVariant &variant, QByteArray &data, bool write)
+QByteArray MsgPackPrivate::pack_qrect(const QVariant &variant)
 {
     // QRect rect = variant.toRect();
     // QPoint pt1 = rect.topLeft();

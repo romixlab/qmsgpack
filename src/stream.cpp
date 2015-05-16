@@ -3,6 +3,7 @@
 #include "private/sysdep.h"
 #include "private/pack_p.h"
 #include "msgpack_common.h"
+#include <limits>
 #include <QDebug>
 
 #undef  CHECK_STREAM_PRECOND
@@ -106,35 +107,98 @@ MsgPackStream &MsgPackStream::operator>>(bool &b)
 
 MsgPackStream &MsgPackStream::operator >>(quint8 &u8)
 {
-    CHECK_STREAM_PRECOND(*this)
-    char c;
-    if (!dev->getChar(&c)) {
-        u8 = 0;
+    CHECK_STREAM_PRECOND(*this);
+    quint8 p;
+    if (dev->read((char *)&p, 1) != 1) {
         setStatus(ReadPastEnd);
-    } else {
-        u8 = quint8(c);
+        return *this;
     }
+    unpack_upto_quint8(u8, &p);
     return *this;
 }
 
 MsgPackStream &MsgPackStream::operator>>(quint16 &u16)
 {
     CHECK_STREAM_PRECOND(*this);
-    quint8 p[3];
-    if (dev->read((char *)p, 3) != 3) {
-        u16 = 0;
+    quint8 p;
+    if (dev->read((char *)&p, 1) != 1) {
         setStatus(ReadPastEnd);
-    } else {
-        if (p[0] != MsgPack::FirstByte::UINT16)
-            setStatus(ReadCorruptData);
-        u16 = _msgpack_load16(quint16, (p + 1));
+        return *this;
     }
+    unpack_upto_quint16(u16, &p);
     return *this;
 }
 
 MsgPackStream &MsgPackStream::operator>>(quint32 &u32)
 {
+    CHECK_STREAM_PRECOND(*this);
+    quint8 p;
+    if (dev->read((char *)&p, 1) != 1) {
+        setStatus(ReadPastEnd);
+        return *this;
+    }
+    unpack_upto_quint32(u32, &p);
+    return *this;
+}
 
+MsgPackStream &MsgPackStream::operator>>(quint64 &u64)
+{
+    CHECK_STREAM_PRECOND(*this);
+    quint8 p;
+    if (dev->read((char *)&p, 1) != 1) {
+        setStatus(ReadPastEnd);
+        return *this;
+    }
+    unpack_upto_quint64(u64, &p);
+    return *this;
+}
+
+MsgPackStream &MsgPackStream::operator>>(qint8 &i8)
+{
+    CHECK_STREAM_PRECOND(*this);
+    quint8 p;
+    if (dev->read((char *)&p, 1) != 1) {
+        setStatus(ReadPastEnd);
+        return *this;
+    }
+    unpack_upto_qint8(i8, &p);
+    return *this;
+}
+
+MsgPackStream &MsgPackStream::operator>>(qint16 &i16)
+{
+    CHECK_STREAM_PRECOND(*this);
+    quint8 p;
+    if (dev->read((char *)&p, 1) != 1) {
+        setStatus(ReadPastEnd);
+        return *this;
+    }
+    unpack_upto_qint16(i16, &p);
+    return *this;
+}
+
+MsgPackStream &MsgPackStream::operator>>(qint32 &i32)
+{
+    CHECK_STREAM_PRECOND(*this);
+    quint8 p;
+    if (dev->read((char *)&p, 1) != 1) {
+        setStatus(ReadPastEnd);
+        return *this;
+    }
+    unpack_upto_qint32(i32, &p);
+    return *this;
+}
+
+MsgPackStream &MsgPackStream::operator>>(qint64 &i64)
+{
+    CHECK_STREAM_PRECOND(*this);
+    quint8 p;
+    if (dev->read((char *)&p, 1) != 1) {
+        setStatus(ReadPastEnd);
+        return *this;
+    }
+    unpack_upto_qint64(i64, &p);
+    return *this;
 }
 
 MsgPackStream &MsgPackStream::operator>>(QString &str)
@@ -179,7 +243,17 @@ MsgPackStream &MsgPackStream::operator<<(quint32 u32)
     CHECK_STREAM_WRITE_PRECOND(*this);
     quint8 p[5];
     quint8 sz = MsgPackPrivate::pack_uint(u32, p, true) - p;
-    if (!dev->write((char *)p, sz) != sz)
+    if (dev->write((char *)p, sz) != sz)
+        setStatus(WriteFailed);
+    return *this;
+}
+
+MsgPackStream &MsgPackStream::operator<<(quint64 u64)
+{
+    CHECK_STREAM_WRITE_PRECOND(*this);
+    quint8 p[9];
+    quint8 sz = MsgPackPrivate::pack_ulonglong(u64, p, true) - p;
+    if (dev->write((char *)p, sz) != sz)
         setStatus(WriteFailed);
     return *this;
 }
@@ -188,8 +262,18 @@ MsgPackStream &MsgPackStream::operator<<(qint32 i32)
 {
     CHECK_STREAM_WRITE_PRECOND(*this);
     quint8 p[5];
-    quint8 sz = MsgPackPrivate::pack_uint(i32, p, true) - p;
-    if (!dev->write((char *)p, sz) != sz)
+    quint8 sz = MsgPackPrivate::pack_int(i32, p, true) - p;
+    if (dev->write((char *)p, sz) != sz)
+        setStatus(WriteFailed);
+    return *this;
+}
+
+MsgPackStream &MsgPackStream::operator<<(qint64 i64)
+{
+    CHECK_STREAM_WRITE_PRECOND(*this);
+    quint8 p[9];
+    quint8 sz = MsgPackPrivate::pack_longlong(i64, p, true) - p;
+    if (dev->write((char *)p, sz) != sz)
         setStatus(WriteFailed);
     return *this;
 }
@@ -200,7 +284,8 @@ MsgPackStream &MsgPackStream::operator<<(QString str)
     quint8 *p = (quint8 *)0;
     quint32 sz = MsgPackPrivate::pack_string(str, p, false) - p;
     quint8 *data = new quint8[sz];
-    MsgPackPrivate::pack(str, data, true);
+    QVector<QByteArray> user_data;
+    MsgPackPrivate::pack(str, data, true, user_data);
     if (dev->write((char *)data, sz) != sz)
         setStatus(WriteFailed);
     delete[] data;
@@ -210,4 +295,176 @@ MsgPackStream &MsgPackStream::operator<<(QString str)
 MsgPackStream &MsgPackStream::operator<<(const char *str)
 {
 
+}
+
+
+bool MsgPackStream::unpack_upto_quint8(quint8 &u8, quint8 *p)
+{
+    if (*p <= MsgPack::FirstByte::POSITIVE_FIXINT) {
+        u8 = *p;
+    } else if (*p == MsgPack::FirstByte::UINT8) {
+        if (dev->read((char* )&u8, 1) != 1) {
+            setStatus(ReadPastEnd);
+            return false;
+        }
+    } else {
+        setStatus(ReadCorruptData);
+        return false;
+    }
+    return true;
+}
+
+bool MsgPackStream::unpack_upto_quint16(quint16 &u16, quint8 *p)
+{
+    if (*p == MsgPack::FirstByte::UINT16) {
+        quint8 d[2];
+        if (dev->read((char *)d, 2) != 2) {
+            setStatus(ReadPastEnd);
+            return false;
+        }
+        u16 = _msgpack_load16(quint16, d);
+    } else {
+        quint8 u8;
+        bool ok = unpack_upto_quint8(u8, p);
+        u16 = u8;
+        return ok;
+    }
+}
+
+bool MsgPackStream::unpack_upto_quint32(quint32 &u32, quint8 *p)
+{
+    if (*p == MsgPack::FirstByte::UINT32) {
+        quint8 d[4];
+        if (dev->read((char *)d, 4) != 4) {
+            setStatus(ReadPastEnd);
+            return false;
+        }
+        u32 = _msgpack_load32(quint32, d);
+        return true;
+    } else {
+        quint16 u16;
+        bool ok = unpack_upto_quint16(u16, p);
+        u32 = u16;
+        return ok;
+    }
+}
+
+bool MsgPackStream::unpack_upto_quint64(quint64 &u64, quint8 *p)
+{
+    if (*p == MsgPack::FirstByte::UINT64) {
+        quint8 d[8];
+        if (dev->read((char *)d, 8) != 8) {
+            setStatus(ReadPastEnd);
+            return false;
+        }
+        u64 = _msgpack_load64(quint64, d);
+        return true;
+    } else {
+        quint32 u32;
+        bool ok = unpack_upto_quint32(u32, p);
+        u64 = u32;
+        return ok;
+    }
+}
+
+bool MsgPackStream::unpack_upto_qint8(qint8 &i8, quint8 *p)
+{
+    if (*p >= MsgPack::FirstByte::NEGATIVE_FIXINT) {
+        i8 = *p;
+    } else if (*p == MsgPack::FirstByte::INT8) {
+        if (dev->read((char *)&i8, 1) != 1) {
+            setStatus(ReadPastEnd);
+            return false;
+        }
+    } else {
+        quint8 u8;
+        bool ok = unpack_upto_quint8(u8, p);
+        if (u8 > std::numeric_limits<qint8>::max())
+            setStatus(ReadCorruptData);
+        else
+            i8 = u8;
+        return ok;
+    }
+    return true;
+}
+
+bool MsgPackStream::unpack_upto_qint16(qint16 &i16, quint8 *p)
+{
+    if (*p == MsgPack::FirstByte::INT16) {
+        quint8 d[2];
+        if (dev->read((char *)d, 2) != 2) {
+            setStatus(ReadPastEnd);
+            return false;
+        }
+        i16 = _msgpack_load16(qint16, d);
+        return true;
+    } else {
+        qint8 i8;
+        bool ok = unpack_upto_qint8(i8, p);
+        if (ok) {
+            i16 = i8;
+        } else {
+            quint16 u16;
+            bool ok = unpack_upto_quint16(u16, p);
+            if (u16 <= std::numeric_limits<qint16>::max())
+                i16 = u16;
+            else
+                setStatus(ReadCorruptData);
+            return ok;
+        }
+    }
+}
+
+bool MsgPackStream::unpack_upto_qint32(qint32 &i32, quint8 *p)
+{
+    if(*p == MsgPack::FirstByte::INT32) {
+        quint8 d[4];
+        if (dev->read((char *)d, 4) != 4) {
+            setStatus(ReadPastEnd);
+            return false;
+        }
+        i32 = _msgpack_load32(qint32, d);
+        return true;
+    } else {
+        qint16 i16;
+        bool ok = unpack_upto_qint16(i16, p);
+        if (ok) {
+            i32 = i16;
+        } else {
+            quint32 u32;
+            bool ok = unpack_upto_quint32(u32, p);
+            if (u32 <= std::numeric_limits<qint32>::max())
+                i32 = u32;
+            else
+                setStatus(ReadCorruptData);
+            return ok;
+        }
+    }
+}
+
+bool MsgPackStream::unpack_upto_qint64(qint64 &i64, quint8 *p)
+{
+    if(*p == MsgPack::FirstByte::INT64) {
+        quint8 d[8];
+        if (dev->read((char *)d, 8) != 8) {
+            setStatus(ReadPastEnd);
+            return false;
+        }
+        i64 = _msgpack_load64(qint64, d);
+        return true;
+    } else {
+        qint32 i32;
+        bool ok = unpack_upto_qint32(i32, p);
+        if (ok) {
+            i64 = i32;
+        } else {
+            quint64 u64;
+            bool ok = unpack_upto_quint64(u64, p);
+            if (u64 <= std::numeric_limits<qint64>::max())
+                i64 = u64;
+            else
+                setStatus(ReadCorruptData);
+            return ok;
+        }
+    }
 }

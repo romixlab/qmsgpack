@@ -58,6 +58,15 @@ private:
     Status q_status;
 
     MsgPackStream &operator<<(const char *str); // use QStringLiteral instead
+
+    bool unpack_upto_quint8(quint8 &u8, quint8 *p);
+    bool unpack_upto_quint16(quint16 &u16, quint8 *p);
+    bool unpack_upto_quint32(quint32 &u32, quint8 *p);
+    bool unpack_upto_quint64(quint64 &u64, quint8 *p);
+    bool unpack_upto_qint8(qint8 &i8, quint8 *p);
+    bool unpack_upto_qint16(qint16 &i16, quint8 *p);
+    bool unpack_upto_qint32(qint32 &i32, quint8 *p);
+    bool unpack_upto_qint64(qint64 &i64, quint8 *p);
 };
 
 #endif // STREAM_H

@@ -66,17 +66,15 @@ private:
 
 Q_DECLARE_METATYPE(CustomType)
 
-quint32 pack_custom_type(const QVariant &variant, QByteArray &data, bool write)
+QByteArray pack_custom_type(const QVariant &variant)
 {
     CustomType ct = variant.value<CustomType>();
-    if (write) {
-        data.resize(ct.size());
-        quint8 *p = (quint8 *)data.data();
-        for (int i = 0; i < ct.size(); ++i)
-            p[i] = 7;
-    }
-
-    return ct.size();
+    QByteArray data;
+    data.resize(ct.size());
+    quint8 *p = (quint8 *)data.data();
+    for (int i = 0; i < ct.size(); ++i)
+        p[i] = 7;
+    return data;
 }
 
 QVariant unpack_custom_type(const QByteArray &data)
