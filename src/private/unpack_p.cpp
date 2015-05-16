@@ -183,7 +183,7 @@ quint8 * MsgPackPrivate::unpack_float64(QVariant &v, quint8 *p)
     for (int i = 0; i < 8; ++i)
         *(fd + 7 - i) = *(p + i);
 #else
-    for (int i = 0; i < 4; ++i)
+    for (int i = 0; i < 8; ++i)
         *(fp + i) = *(p + i);
 #endif
     v = d;

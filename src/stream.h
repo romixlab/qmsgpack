@@ -38,12 +38,26 @@ public:
     MsgPackStream &operator>>(QVariantList &list);
     MsgPackStream &operator>>(QVariantMap &map);
 
+    MsgPackStream &operator<<(bool b);
+    MsgPackStream &operator<<(quint32 u32);
+    MsgPackStream &operator<<(quint64 u64);
+    MsgPackStream &operator<<(qint32 i32);
+    MsgPackStream &operator<<(qint64 i64);
+    MsgPackStream &operator<<(float f);
+    MsgPackStream &operator<<(double d);
+    MsgPackStream &operator<<(QString str);
+
+    MsgPackStream &operator<<(QByteArray array);
+    MsgPackStream &operator<<(QVariantList list);
+    MsgPackStream &operator<<(QVariantMap map);
 
 private:
     QIODevice *dev;
     bool compatibility;
     bool owndev;
     Status q_status;
+
+    MsgPackStream &operator<<(const char *str); // use QStringLiteral instead
 };
 
 #endif // STREAM_H

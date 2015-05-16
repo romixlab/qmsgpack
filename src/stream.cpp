@@ -1,6 +1,7 @@
 #include "stream.h"
 #include <QBuffer>
 #include "private/sysdep.h"
+#include "private/pack_p.h"
 #include "msgpack_common.h"
 #include <QDebug>
 
@@ -136,3 +137,77 @@ MsgPackStream &MsgPackStream::operator>>(quint32 &u32)
 
 }
 
+MsgPackStream &MsgPackStream::operator>>(QString &str)
+{
+    CHECK_STREAM_PRECOND(*this);
+    quint8 p[5];
+    if (dev->read((char *)p, 1) != 1) {
+        setStatus(ReadPastEnd);
+        return *this;
+    }
+
+    int len = 0;
+    if (*p >= 0xa0 && *p <= 0xbf) { // fixstr
+        len = (*p) & 0x1f; // 0b00011111
+    } else if (*p == MsgPack::FirstByte::STR8) {
+        if (dev->read((char *)p + 1, 1) == 1)
+            len = p[1];
+    } else if (*p == MsgPack::FirstByte::STR16) {
+        if (dev->read((char *)p + 1, 2) == 2)
+            len = _msgpack_load16(int, &p[1]);
+    } else if (*p == MsgPack::FirstByte::STR32) {
+        if (dev->read((char *)p + 1, 4) == 4)
+            len = _msgpack_load32(int, &p[1]);
+    } else {
+        setStatus(ReadCorruptData);
+        return *this;
+    }
+}
+
+MsgPackStream &MsgPackStream::operator<<(bool b)
+{
+    CHECK_STREAM_WRITE_PRECOND(*this);
+    quint8 m = b == true ?
+                MsgPack::FirstByte::TRUE : MsgPack::FirstByte::FALSE;
+    if (dev->write((char *)&m, 1) != 1)
+        setStatus(WriteFailed);
+    return *this;
+}
+
+MsgPackStream &MsgPackStream::operator<<(quint32 u32)
+{
+    CHECK_STREAM_WRITE_PRECOND(*this);
+    quint8 p[5];
+    quint8 sz = MsgPackPrivate::pack_uint(u32, p, true) - p;
+    if (!dev->write((char *)p, sz) != sz)
+        setStatus(WriteFailed);
+    return *this;
+}
+
+MsgPackStream &MsgPackStream::operator<<(qint32 i32)
+{
+    CHECK_STREAM_WRITE_PRECOND(*this);
+    quint8 p[5];
+    quint8 sz = MsgPackPrivate::pack_uint(i32, p, true) - p;
+    if (!dev->write((char *)p, sz) != sz)
+        setStatus(WriteFailed);
+    return *this;
+}
+
+MsgPackStream &MsgPackStream::operator<<(QString str)
+{
+    CHECK_STREAM_WRITE_PRECOND(*this);
+    quint8 *p = (quint8 *)0;
+    quint32 sz = MsgPackPrivate::pack_string(str, p, false) - p;
+    quint8 *data = new quint8[sz];
+    MsgPackPrivate::pack(str, data, true);
+    if (dev->write((char *)data, sz) != sz)
+        setStatus(WriteFailed);
+    delete[] data;
+    return *this;
+}
+
+MsgPackStream &MsgPackStream::operator<<(const char *str)
+{
+
+}
