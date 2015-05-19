@@ -77,6 +77,8 @@ void QtTypesTest::test_qpoint()
     packed = MsgPack::pack(pt);
     QVERIFY(packed.size() == 9);
     pt2 = MsgPack::unpack(packed).toPoint();
+    qDebug() << pt << pt2;
+    qDebug() << packed.toHex() << packed.size();
     QVERIFY(pt == pt2);
 
     pt = QPoint(std::numeric_limits<qint32>::max(), std::numeric_limits<qint32>::max());

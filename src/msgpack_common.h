@@ -10,14 +10,14 @@
 
 namespace MsgPack {
 /**
- * @brief pack user type to byte array data
- * @arg variant user type, must be registered first
- * @return array with user data only, all other fields will be added automatically
+ * pack some variant to byte array data
+ * when write == false only calculates and returns size
+ * when write == true writes bytes to data, and returns the same size
+ * return type size
  */
 typedef QByteArray (*pack_user_f)(const QVariant &variant);
 /**
- * @brief unpack user type to QVariant
- * @arg data only user data, without size and messagepack type
+ * unpack user type to QVariant
  */
 typedef QVariant (*unpack_user_f)(const QByteArray &data);
 /**

@@ -216,14 +216,14 @@ void PackTest::test_float()
 
 void PackTest::test_str()
 {
-    QString str = QString::fromUtf8("msgpack rocks");
+    QString str = QStringLiteral("msgpack rocks");
     QByteArray arr = MsgPack::pack(str);
     QVERIFY(arr.size() == 14);
     quint8 *p = (quint8 *)arr.data();
     QVERIFY(p[0] == (0xa0 | str.length()));
     QVERIFY(memcmp(p + 1, str.toUtf8().data(), str.size()) == 0);
 
-    str = QString::fromUtf8(QByteArray(32, 'm'));
+    str = QString(QByteArray(32, 'm'));
     arr = MsgPack::pack(str);
     QVERIFY(arr.size() == 32 + 2);
     p = (quint8 *)arr.data();
@@ -231,7 +231,7 @@ void PackTest::test_str()
     QVERIFY(p[1] == 32);
     QVERIFY(memcmp(p + 2, str.toUtf8().data(), str.size()) == 0);
 
-    str = QString::fromUtf8(QByteArray(256, 's'));
+    str = QString(QByteArray(256, 's'));
     arr = MsgPack::pack(str);
     QVERIFY(arr.size() == 256 + 3);
     p = (quint8 *)arr.data();
@@ -240,7 +240,7 @@ void PackTest::test_str()
     QVERIFY(p[2] == 0x00);
     QVERIFY(memcmp(p + 3, str.toUtf8().data(), str.size()) == 0);
 
-    str = QString::fromUtf8(QByteArray(65536, 'g'));
+    str = QString(QByteArray(65536, 'g'));
     arr = MsgPack::pack(str);
     QVERIFY(arr.size() == 65536 + 5);
     p = (quint8 *)arr.data();

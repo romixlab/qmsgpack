@@ -175,9 +175,8 @@ quint8 *MsgPackPrivate::pack_stringlist(const QStringList &list, quint8 *p, bool
     return p;
 }
 
-quint8 *MsgPackPrivate::pack_string(const QString &str, quint8 *p, bool wr)
+quint8 *MsgPackPrivate::pack_string_raw(const char *str, quint32 len, quint8 *p, bool wr)
 {
-    int len = str.length();
     if (len <= 31) {
         if (wr) *p = 0xa0 | len;
         p++;
@@ -198,9 +197,16 @@ quint8 *MsgPackPrivate::pack_string(const QString &str, quint8 *p, bool wr)
         if (wr) _msgpack_store32(p, len);
         p += 4;
     }
-    if (wr) memcpy(p, str.toUtf8().data(), len);
+    if (wr) memcpy(p, str, len);
 
     return p + len;
+}
+
+quint8 *MsgPackPrivate::pack_string(const QString &str, quint8 *p, bool wr)
+{
+    QByteArray str_data = str.toUtf8();
+    quint32 str_len = str_data.length();
+    return pack_string_raw(str_data.data(), str_len, p, wr);
 }
 
 quint8 *MsgPackPrivate::pack_double(double i, quint8 *p, bool wr)

@@ -15,8 +15,6 @@ public:
     QIODevice *device() const;
     bool atEnd() const;
 
-    void setCompatibility(bool isEnabled);
-
     enum Status {Ok, ReadPastEnd, ReadCorruptData, WriteFailed};
     Status status() const;
     void resetStatus();
@@ -46,18 +44,15 @@ public:
     MsgPackStream &operator<<(float f);
     MsgPackStream &operator<<(double d);
     MsgPackStream &operator<<(QString str);
-
+    MsgPackStream &operator<<(const char *str);
     MsgPackStream &operator<<(QByteArray array);
     MsgPackStream &operator<<(QVariantList list);
     MsgPackStream &operator<<(QVariantMap map);
 
 private:
     QIODevice *dev;
-    bool compatibility;
     bool owndev;
     Status q_status;
-
-    MsgPackStream &operator<<(const char *str); // use QStringLiteral instead
 
     bool unpack_upto_quint8(quint8 &u8, quint8 *p);
     bool unpack_upto_quint16(quint16 &u16, quint8 *p);

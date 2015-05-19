@@ -1,6 +1,7 @@
 #include "qt_types_p.h"
 #include "pack_p.h"
 #include "unpack_p.h"
+#include "stream.h"
 #include "sysdep.h"
 
 #include <QDebug>
@@ -169,90 +170,59 @@ QVariant MsgPackPrivate::unpack_qdatetime(const QByteArray &data)
 // Points and Vectors
 QByteArray MsgPackPrivate::pack_qpoint(const QVariant &variant)
 {
-    // QPoint pt = variant.toPoint();
-    // quint8 size = pack_two_integers(pt.x(), pt.y(), 0, false);
-    // if (write) {
-    //     data.resize(size);
-    //     pack_two_integers(pt.x(), pt.y(), (quint8 *)data.data(), true);
-    // }
-    // return size;
+    QByteArray packed;
+    MsgPackStream stream(&packed, QIODevice::WriteOnly);
+    QPoint pt = variant.toPoint();
+    stream << pt.x() << pt.y();
+    return packed;
 }
 
 QVariant MsgPackPrivate::unpack_qpoint(const QByteArray &data)
 {
-    // quint8 *p = (quint8 *)data.data();
-    // qint32 x;
-    // bool ok;
-    // p = MsgPack::Ext::unpack_upto_qint32(&x, p, &ok);
-    // QPoint pt;
-    // pt.setX(x);
-    // MsgPack::Ext::unpack_upto_qint32(&x, p, &ok);
-    // pt.setY(x);
-    // return pt;
+    MsgPackStream stream(data);
+    qint32 x, y;
+    stream >> x >> y;
+    qDebug() << "unpack qpoint stream" << (stream.status() == MsgPackStream::Ok);
+    return QPoint(x, y);
 }
 
 QByteArray MsgPackPrivate::pack_qsize(const QVariant &variant)
 {
-    // QSize sz = variant.toSize();
-    // quint8 size = pack_two_integers(sz.width(), sz.height(), 0, false);
-    // if (write) {
-    //     data.resize(size);
-    //     pack_two_integers(sz.width(), sz.height(), (quint8 *)data.data(), true);
-    // }
-    // return size;
+    QByteArray packed;
+    MsgPackStream stream(&packed, QIODevice::WriteOnly);
+    QSize sz = variant.toSize();
+    stream << sz.width() << sz.height();
+    return packed;
 }
 
 QVariant MsgPackPrivate::unpack_qsize(const QByteArray &data)
 {
-    // quint8 *p = (quint8 *)data.data();
-    // qint32 x;
-    // bool ok;
-    // p = MsgPack::Ext::unpack_upto_qint32(&x, p, &ok);
-    // QSize sz;
-    // sz.setWidth(x);
-    // MsgPack::Ext::unpack_upto_qint32(&x, p, &ok);
-    // sz.setHeight(x);
-    // return sz;
+    MsgPackStream stream(data);
+    qint32 width, height;
+    stream >> width >> height;
+    return QSize(width, height);
 }
 
 QByteArray MsgPackPrivate::pack_qrect(const QVariant &variant)
 {
-    // QRect rect = variant.toRect();
-    // QPoint pt1 = rect.topLeft();
-    // QPoint pt2 = rect.bottomRight();
-    // quint8 size = pack_two_integers(pt1.x(), pt1.y(), 0, false);
-    // size += pack_two_integers(pt2.x(), pt2.y(), 0, false);
-    // if (write) {
-    //     data.resize(size);
-    //     quint8 *p = (quint8 *)data.data();
-    //     p += pack_two_integers(pt1.x(), pt1.y(), p, true);
-    //     pack_two_integers(pt2.x(), pt2.y(), p, true);
-    // }
-    // return size;
+    QRect rect = variant.toRect();
+    QPoint pt1 = rect.topLeft();
+    QPoint pt2 = rect.bottomRight();
+    QByteArray packed;
+    MsgPackStream stream(&packed, QIODevice::WriteOnly);
+    stream << pt1.x() << pt1.y() << pt2.x() << pt2.y();
+    return packed;
 }
 
 QVariant MsgPackPrivate::unpack_qrect(const QByteArray &data)
 {
-    // quint8 *p = (quint8 *)data.data();
-    // qint32 x;
-    // bool ok;
-
-    // p = MsgPack::Ext::unpack_upto_qint32(&x, p, &ok);
-    // QPoint pt;
-    // pt.setX(x);
-    // p = MsgPack::Ext::unpack_upto_qint32(&x, p, &ok);
-    // pt.setY(x);
-
-    // QRect rect;
-    // rect.setTopLeft(pt);
-
-    // p = MsgPack::Ext::unpack_upto_qint32(&x, p, &ok);
-    // pt.setX(x);
-    // p = MsgPack::Ext::unpack_upto_qint32(&x, p, &ok);
-    // pt.setY(x);
-
-    // rect.setBottomRight(pt);
-
-    // return rect;
+    MsgPackStream stream(data);
+    qint32 x, y;
+    stream >> x >> y;
+    QRect rect;
+    rect.setTopLeft(QPoint(x, y));
+    stream >> x >> y;
+    rect.setBottomRight(QPoint(x, y));
+    return rect;
 }
 

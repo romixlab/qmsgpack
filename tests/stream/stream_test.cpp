@@ -12,6 +12,8 @@ class StreamTest : public QObject
 private Q_SLOTS:
     void test_unpack_integers();
     void test_pack_integers();
+    void test_unpack_string();
+    void test_pack_string();
 
 };
 
@@ -133,6 +135,72 @@ void StreamTest::test_pack_integers()
     QVERIFY(l[17].toULongLong() == std::numeric_limits<quint64>::max());
     QVERIFY(l[18].toLongLong() == -2147483649);
     QVERIFY(l[19].toLongLong() == std::numeric_limits<qint64>::min());
+}
+
+void StreamTest::test_unpack_string()
+{
+    QString str = QStringLiteral("msgpack rocks");
+    QByteArray packed = MsgPack::pack(str);
+    QString str2;
+
+    {
+        MsgPackStream stream(packed);
+        stream >> str2;
+        QVERIFY(str == str2);
+    }
+    {
+        str = QString(QByteArray(32, 'm'));
+        packed = MsgPack::pack(str);
+        MsgPackStream stream(packed);
+        stream >> str2;
+        QVERIFY(str == str2);
+    }
+    {
+        str = QString::fromUtf8(QByteArray(256, 's'));
+        packed = MsgPack::pack(str);
+        MsgPackStream stream(packed);
+        stream >> str2;
+        QVERIFY(str == str2);
+    }
+    {
+        str = QString(QByteArray(65536, 'g'));
+        packed = MsgPack::pack(str);
+        MsgPackStream stream(packed);
+        stream >> str2;
+        QVERIFY(str == str2);
+    }
+}
+
+void StreamTest::test_pack_string()
+{
+    QByteArray packed;
+    MsgPackStream stream(&packed, QIODevice::WriteOnly);
+    QStringList strs;
+    stream << "abc";
+    strs << "abc";
+    QString s;
+    for (int i = 0; i < 8; ++i)
+        s += "xy";
+    stream << s;
+    strs << s;
+    s = QString();
+    for (int i = 0; i < 64; ++i)
+        s += "msgp";
+    stream << s;
+    strs << s;
+    s = QString();
+    for (int i = 0; i < 4096; ++i)
+        s += "messagepack test";
+    stream << s;
+    strs << s;
+    stream << "";
+
+    QStringList l = MsgPack::unpack(packed).toStringList();
+    QVERIFY(l[0] == strs[0]);
+    QVERIFY(l[1] == strs[1]);
+    QVERIFY(l[2] == strs[2]);
+    QVERIFY(l[3] == strs[3]);
+    QVERIFY(l[4].isEmpty());
 }
 
 

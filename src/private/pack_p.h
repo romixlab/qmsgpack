@@ -36,6 +36,7 @@ quint8 * pack_arraylen(quint32 len, quint8 *p, bool wr);
 quint8 * pack_array(const QVariantList &list, quint8 *p, bool wr, QVector<QByteArray> &user_data);
 quint8 * pack_stringlist(const QStringList &list, quint8 *p, bool wr);
 
+quint8 * pack_string_raw(const char *str, quint32 len, quint8 *p, bool wr);
 quint8 * pack_string(const QString &str, quint8 *p, bool wr);
 quint8 * pack_double(double i, quint8 *p, bool wr);
 quint8 * pack_bin(const QByteArray &arr, quint8 *p, bool wr);
