@@ -121,7 +121,7 @@ MsgPackStream &MsgPackStream::operator>>(quint16 &u16)
         setStatus(ReadPastEnd);
         return *this;
     }
-    if (!unpack_upto_quint16(u16, &p {
+    if (!unpack_upto_quint16(u16, &p))
         setStatus(ReadCorruptData);
     return *this;
 }
@@ -134,7 +134,7 @@ MsgPackStream &MsgPackStream::operator>>(quint32 &u32)
         setStatus(ReadPastEnd);
         return *this;
     }
-    if (!unpack_upto_quint32(u32, &p {
+    if (!unpack_upto_quint32(u32, &p))
         setStatus(ReadCorruptData);
     return *this;
 }
@@ -147,7 +147,7 @@ MsgPackStream &MsgPackStream::operator>>(quint64 &u64)
         setStatus(ReadPastEnd);
         return *this;
     }
-    if (!unpack_upto_quint64(u64, &p {
+    if (!unpack_upto_quint64(u64, &p))
         setStatus(ReadCorruptData);
     return *this;
 }
@@ -160,7 +160,8 @@ MsgPackStream &MsgPackStream::operator>>(qint8 &i8)
         setStatus(ReadPastEnd);
         return *this;
     }
-    if (!unpack_upto_qint8(i8, &p))         setStatus(ReadCorruptData);
+    if (!unpack_upto_qint8(i8, &p))
+        setStatus(ReadCorruptData);
     return *this;
 }
 
@@ -172,7 +173,7 @@ MsgPackStream &MsgPackStream::operator>>(qint16 &i16)
         setStatus(ReadPastEnd);
         return *this;
     }
-    if (!unpack_upto_qint16(i16, &p){
+    if (!unpack_upto_qint16(i16, &p))
         setStatus(ReadCorruptData);
     return *this;
 }
@@ -185,7 +186,7 @@ MsgPackStream &MsgPackStream::operator>>(qint32 &i32)
         setStatus(ReadPastEnd);
         return *this;
     }
-    if (!unpack_upto_qint32(i32, &p){
+    if (!unpack_upto_qint32(i32, &p))
         setStatus(ReadCorruptData);
     return *this;
 }
@@ -198,7 +199,7 @@ MsgPackStream &MsgPackStream::operator>>(qint64 &i64)
         setStatus(ReadPastEnd);
         return *this;
     }
-    if (!unpack_upto_qint64(i64, &p){
+    if (!unpack_upto_qint64(i64, &p))
         setStatus(ReadCorruptData);
     return *this;
 }
