@@ -204,6 +204,52 @@ MsgPackStream &MsgPackStream::operator>>(qint64 &i64)
     return *this;
 }
 
+MsgPackStream &MsgPackStream::operator>>(float &f)
+{
+    CHECK_STREAM_PRECOND(*this);
+    quint8 *fp = (quint8 *)&f;
+    quint8 p[5];
+    if (dev->read((char *)&p, 1) != 1) {
+        setStatus(ReadPastEnd);
+        return *this;
+    }
+    if (p[0] != MsgPack::FirstByte::FLOAT32) {
+        setStatus(ReadCorruptData);
+        return *this;
+    }
+#ifdef __LITTLE_ENDIAN__
+    for (int i = 0; i < 4; ++i)
+        *(fp + 3 - i) = *(p + i + 1);
+#else
+    for (int i = 0; i < 4; ++i)
+        *(fp + i) = *(p + i + 1);
+#endif
+    return *this;
+}
+
+MsgPackStream &MsgPackStream::operator>>(double &d)
+{
+    CHECK_STREAM_PRECOND(*this);
+    quint8 *fp = (quint8 *)&f;
+    quint8 p[9];
+    if (dev->read((char *)&p, 1) != 1) {
+        setStatus(ReadPastEnd);
+        return *this;
+    }
+    if (p[0] != MsgPack::FirstByte::FLOAT64) {
+        setStatus(ReadCorruptData);
+        return *this;
+    }
+#ifdef __LITTLE_ENDIAN__
+    for (int i = 0; i < 8; ++i)
+        *(fp + 7 - i) = *(p + i + 1);
+#else
+    for (int i = 0; i < 8; ++i)
+        *(fp + i) = *(p + i + 1);
+#endif
+    return *this;
+}
+
 MsgPackStream &MsgPackStream::operator>>(QString &str)
 {
     CHECK_STREAM_PRECOND(*this);
@@ -237,6 +283,21 @@ MsgPackStream &MsgPackStream::operator>>(QString &str)
     }
     str = QString::fromUtf8((const char*) data, len);
     delete[] data;
+}
+
+MsgPackStream &MsgPackStream::operator>>(QByteArray &array)
+{
+
+}
+
+MsgPackStream &MsgPackStream::operator>>(QVariantList &list)
+{
+
+}
+
+MsgPackStream &MsgPackStream::operator>>(QVariantMap &map)
+{
+
 }
 
 MsgPackStream &MsgPackStream::operator<<(bool b)
@@ -289,6 +350,26 @@ MsgPackStream &MsgPackStream::operator<<(qint64 i64)
     return *this;
 }
 
+MsgPackStream &MsgPackStream::operator<<(float f)
+{
+    CHECK_STREAM_WRITE_PRECOND(*this);
+    quint8 p[5];
+    quint8 sz = MsgPackPrivate::pack_float(f, p, true) - p;
+    if (dev->write((char *)p, sz) != sz)
+        setStatus(WriteFailed);
+    return *this;
+}
+
+MsgPackStream &MsgPackStream::operator<<(double d)
+{
+    CHECK_STREAM_WRITE_PRECOND(*this);
+    quint8 p[9];
+    quint8 sz = MsgPackPrivate::pack_float(d, p, true) - p;
+    if (dev->write((char *)p, sz) != sz)
+        setStatus(WriteFailed);
+    return *this;
+}
+
 MsgPackStream &MsgPackStream::operator<<(QString str)
 {
     CHECK_STREAM_WRITE_PRECOND(*this);
@@ -314,6 +395,21 @@ MsgPackStream &MsgPackStream::operator<<(const char *str)
         setStatus(WriteFailed);
     delete[] data;
     return *this;
+}
+
+MsgPackStream &MsgPackStream::operator<<(QByteArray array)
+{
+
+}
+
+MsgPackStream &MsgPackStream::operator<<(QVariantList list)
+{
+
+}
+
+MsgPackStream &MsgPackStream::operator<<(QVariantMap map)
+{
+
 }
 
 bool MsgPackStream::unpack_upto_quint8(quint8 &u8, quint8 *p)

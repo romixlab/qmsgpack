@@ -37,6 +37,8 @@ quint8 *MsgPackPrivate::pack(const QVariant &v, quint8 *p, bool wr, QVector<QByt
         p = pack_ulonglong(v.toULongLong(), p, wr);
     else if (t == QMetaType::Double)
         p = pack_double(v.toDouble(), p, wr);
+    else if (t == QMetaType::Float)
+        p = pack_float(v.toFloat(), p, wr);
     else if (t == QMetaType::QByteArray)
         p = pack_bin(v.toByteArray(), p, wr);
     else if (t == QMetaType::QVariantMap)
@@ -208,6 +210,24 @@ quint8 *MsgPackPrivate::pack_string(const QString &str, quint8 *p, bool wr)
     quint32 str_len = str_data.length();
     return pack_string_raw(str_data.data(), str_len, p, wr);
 }
+
+quint8 *MsgPackPrivate::pack_float(float f, quint8 *p, bool wr)
+{
+    if (wr) *p = 0xca;
+    p++;
+    if (wr) {
+        quint8 *d = (quint8 *)&i;
+#ifdef __LITTLE_ENDIAN__
+        for (int i = 0; i < 4; ++i)
+            *(p + 3 - i) = *(d + i);
+#else
+        for (int i = 0; i < 4; ++i)
+            *(p + i) = *(d + i);
+#endif
+    }
+    return p + 8;
+}
+
 
 quint8 *MsgPackPrivate::pack_double(double i, quint8 *p, bool wr)
 {
