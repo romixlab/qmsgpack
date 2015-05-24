@@ -14,7 +14,9 @@ private Q_SLOTS:
     void test_pack_integers();
     void test_unpack_string();
     void test_pack_string();
-
+    void test_float();
+    void test_double();
+    void test_bin();
 };
 
 void StreamTest::test_unpack_integers()
@@ -203,7 +205,107 @@ void StreamTest::test_pack_string()
     QVERIFY(l[4].isEmpty());
 }
 
+void StreamTest::test_float()
+{
+    QByteArray packed;
+    {
+        MsgPackStream stream(&packed, QIODevice::WriteOnly);
+        stream << -0.0f << 0.0f << -1.0f << 1.0f << -32767.0f << 32767.0f;
+        QVERIFY(packed.size() == 6 * 5);
+        QVERIFY(stream.status() == MsgPackStream::Ok);
+    }
+
+    MsgPackStream stream(packed);
+    float f;
+
+    stream >> f;
+    QVERIFY(f == -0.0f);
+    QVERIFY(stream.status() == MsgPackStream::Ok);
+
+    stream >> f;
+    QVERIFY(f == 0.0f);
+    QVERIFY(stream.status() == MsgPackStream::Ok);
+
+    stream >> f;
+    QVERIFY(f == -1.0f);
+    QVERIFY(stream.status() == MsgPackStream::Ok);
+
+    stream >> f;
+    QVERIFY(f == 1.0f);
+    QVERIFY(stream.status() == MsgPackStream::Ok);
+
+    stream >> f;
+    QVERIFY(f == -32767.0f);
+    QVERIFY(stream.status() == MsgPackStream::Ok);
+
+    stream >> f;
+    QVERIFY(f == 32767.0f);
+    QVERIFY(stream.status() == MsgPackStream::Ok);
+}
+
+void StreamTest::test_double()
+{
+    QByteArray packed;
+    {
+        MsgPackStream stream(&packed, QIODevice::WriteOnly);
+        stream << -0.0 << 0.0 << -1.0 << 1.0 << -32767.0 << 32767.0;
+        QVERIFY(packed.size() == 6 * 9);
+        QVERIFY(stream.status() == MsgPackStream::Ok);
+    }
+
+    MsgPackStream stream(packed);
+    double d;
+
+    stream >> d;
+    QVERIFY(d == -0.0);
+    QVERIFY(stream.status() == MsgPackStream::Ok);
+
+    stream >> d;
+    QVERIFY(d == 0.0);
+    QVERIFY(stream.status() == MsgPackStream::Ok);
+
+    stream >> d;
+    QVERIFY(d == -1.0);
+    QVERIFY(stream.status() == MsgPackStream::Ok);
+
+    stream >> d;
+    QVERIFY(d == 1.0);
+    QVERIFY(stream.status() == MsgPackStream::Ok);
+
+    stream >> d;
+    QVERIFY(d == -32767.0);
+    QVERIFY(stream.status() == MsgPackStream::Ok);
+
+    stream >> d;
+    QVERIFY(d == 32767.0);
+    QVERIFY(stream.status() == MsgPackStream::Ok);
+}
+
+void StreamTest::test_bin()
+{
+    QByteArray ba1("msgpack"), ba2(256, 'r'), ba3(65536, 'x');
+    QByteArray packed;
+    {
+        MsgPackStream stream(&packed, QIODevice::WriteOnly);
+        stream << ba1 << ba2 << ba3;
+    }
+    QVERIFY(packed.size() == 7+2 + 256+3 + 65536+5);
+
+    MsgPackStream stream(packed);
+    QByteArray ba;
+
+    stream >> ba;
+    QVERIFY(ba == ba1);
+    QVERIFY(stream.status() == MsgPackStream::Ok);
+
+    stream >> ba;
+    QVERIFY(ba == ba2);
+    QVERIFY(stream.status() == MsgPackStream::Ok);
+
+    stream >> ba;
+    QVERIFY(ba == ba3);
+    QVERIFY(stream.status() == MsgPackStream::Ok);
+}
 
 QTEST_APPLESS_MAIN(StreamTest)
-
 #include "stream_test.moc"

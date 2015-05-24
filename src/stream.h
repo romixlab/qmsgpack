@@ -33,8 +33,6 @@ public:
     MsgPackStream &operator>>(double &d);
     MsgPackStream &operator>>(QString &str);
     MsgPackStream &operator>>(QByteArray &array);
-    MsgPackStream &operator>>(QVariantList &list);
-    MsgPackStream &operator>>(QVariantMap &map);
 
     MsgPackStream &operator<<(bool b);
     MsgPackStream &operator<<(quint32 u32);
@@ -46,8 +44,6 @@ public:
     MsgPackStream &operator<<(QString str);
     MsgPackStream &operator<<(const char *str);
     MsgPackStream &operator<<(QByteArray array);
-    MsgPackStream &operator<<(QVariantList list);
-    MsgPackStream &operator<<(QVariantMap map);
 
 private:
     QIODevice *dev;
@@ -63,5 +59,30 @@ private:
     bool unpack_upto_qint32(qint32 &i32, quint8 *p);
     bool unpack_upto_qint64(qint64 &i64, quint8 *p);
 };
+
+template <typename T>
+MsgPackStream& operator<<(MsgPackStream& s, const QList<T> &list)
+{
+    s << (quint32)list.size();
+    for (int i = 0; i < list.size(); ++i)
+        s << list[i];
+    return s;
+}
+
+template <typename T>
+MsgPackStream& operator>>(MsgPackStream& s, QList<T> &list)
+{
+    list.clear();
+    quint32 size;
+    s >> size;
+    for (quint32 i = 0; i < size; ++i) {
+        T t;
+        s >> t;
+        list.append(t);
+        if (s.atEnd())
+            break;
+    }
+    return s;
+}
 
 #endif // STREAM_H

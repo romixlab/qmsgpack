@@ -209,12 +209,16 @@ MsgPackStream &MsgPackStream::operator>>(float &f)
     CHECK_STREAM_PRECOND(*this);
     quint8 *fp = (quint8 *)&f;
     quint8 p[5];
-    if (dev->read((char *)&p, 1) != 1) {
+    if (dev->read((char *)p, 1) != 1) {
         setStatus(ReadPastEnd);
         return *this;
     }
     if (p[0] != MsgPack::FirstByte::FLOAT32) {
         setStatus(ReadCorruptData);
+        return *this;
+    }
+    if (dev->read((char *)p + 1, 4) != 4) {
+        setStatus(ReadPastEnd);
         return *this;
     }
 #ifdef __LITTLE_ENDIAN__
@@ -230,14 +234,18 @@ MsgPackStream &MsgPackStream::operator>>(float &f)
 MsgPackStream &MsgPackStream::operator>>(double &d)
 {
     CHECK_STREAM_PRECOND(*this);
-    quint8 *fp = (quint8 *)&f;
+    quint8 *fp = (quint8 *)&d;
     quint8 p[9];
-    if (dev->read((char *)&p, 1) != 1) {
+    if (dev->read((char *)p, 1) != 1) {
         setStatus(ReadPastEnd);
         return *this;
     }
     if (p[0] != MsgPack::FirstByte::FLOAT64) {
         setStatus(ReadCorruptData);
+        return *this;
+    }
+    if (dev->read((char *)p + 1, 8) != 8) {
+        setStatus(ReadPastEnd);
         return *this;
     }
 #ifdef __LITTLE_ENDIAN__
@@ -287,17 +295,39 @@ MsgPackStream &MsgPackStream::operator>>(QString &str)
 
 MsgPackStream &MsgPackStream::operator>>(QByteArray &array)
 {
-
-}
-
-MsgPackStream &MsgPackStream::operator>>(QVariantList &list)
-{
-
-}
-
-MsgPackStream &MsgPackStream::operator>>(QVariantMap &map)
-{
-
+    CHECK_STREAM_PRECOND(*this);
+    quint8 p[5];
+    if (dev->read((char *)p, 1) != 1) {
+        setStatus(ReadPastEnd);
+        return *this;
+    }
+    quint32 len;
+    if (p[0] == MsgPack::FirstByte::BIN8) {
+        if (dev->read((char *)p + 1, 1) != 1) {
+            setStatus(ReadPastEnd);
+            return *this;
+        }
+        len = p[1];
+    } else if (p[0] == MsgPack::FirstByte::BIN16) {
+        if (dev->read((char *)p + 1, 2) != 2) {
+            setStatus(ReadPastEnd);
+            return *this;
+        }
+        len = _msgpack_load16(quint16, &p[1]);
+    } else if (p[0] == MsgPack::FirstByte::BIN32) {
+        if (dev->read((char *)p + 1, 4) != 4) {
+            setStatus(ReadPastEnd);
+            return *this;
+        }
+        len = _msgpack_load32(quint32, &p[1]);
+    } else {
+        setStatus(ReadCorruptData);
+        return *this;
+    }
+    array.resize(len);
+    if (dev->read(array.data(), len) != len)
+        setStatus(ReadPastEnd);
+    return *this;
 }
 
 MsgPackStream &MsgPackStream::operator<<(bool b)
@@ -364,7 +394,7 @@ MsgPackStream &MsgPackStream::operator<<(double d)
 {
     CHECK_STREAM_WRITE_PRECOND(*this);
     quint8 p[9];
-    quint8 sz = MsgPackPrivate::pack_float(d, p, true) - p;
+    quint8 sz = MsgPackPrivate::pack_double(d, p, true) - p;
     if (dev->write((char *)p, sz) != sz)
         setStatus(WriteFailed);
     return *this;
@@ -399,17 +429,17 @@ MsgPackStream &MsgPackStream::operator<<(const char *str)
 
 MsgPackStream &MsgPackStream::operator<<(QByteArray array)
 {
-
-}
-
-MsgPackStream &MsgPackStream::operator<<(QVariantList list)
-{
-
-}
-
-MsgPackStream &MsgPackStream::operator<<(QVariantMap map)
-{
-
+    CHECK_STREAM_WRITE_PRECOND(*this);
+    quint8 p[5];
+    quint32 len = array.length();
+    quint8 header_len = MsgPackPrivate::pack_bin_header(len, p, true) - p;
+    if (dev->write((char *)p, header_len) != header_len) {
+        setStatus(WriteFailed);
+        return *this;
+    }
+    if (dev->write(array.data(), len) != len)
+        setStatus(WriteFailed);
+    return *this;
 }
 
 bool MsgPackStream::unpack_upto_quint8(quint8 &u8, quint8 *p)

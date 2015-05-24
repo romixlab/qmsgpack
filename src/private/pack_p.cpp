@@ -216,7 +216,7 @@ quint8 *MsgPackPrivate::pack_float(float f, quint8 *p, bool wr)
     if (wr) *p = 0xca;
     p++;
     if (wr) {
-        quint8 *d = (quint8 *)&i;
+        quint8 *d = (quint8 *)&f;
 #ifdef __LITTLE_ENDIAN__
         for (int i = 0; i < 4; ++i)
             *(p + 3 - i) = *(d + i);
@@ -225,9 +225,8 @@ quint8 *MsgPackPrivate::pack_float(float f, quint8 *p, bool wr)
             *(p + i) = *(d + i);
 #endif
     }
-    return p + 8;
+    return p + 4;
 }
-
 
 quint8 *MsgPackPrivate::pack_double(double i, quint8 *p, bool wr)
 {
@@ -246,9 +245,8 @@ quint8 *MsgPackPrivate::pack_double(double i, quint8 *p, bool wr)
     return p + 8;
 }
 
-quint8 *MsgPackPrivate::pack_bin(const QByteArray &arr, quint8 *p, bool wr)
+quint8 *MsgPackPrivate::pack_bin_header(quint32 len, quint8 *p, bool wr)
 {
-    int len = arr.length();
     if (len <= std::numeric_limits<quint8>::max()) {
         if (wr) *p = compatibilityMode ? 0xd9 : 0xc4;
         p++;
@@ -265,9 +263,15 @@ quint8 *MsgPackPrivate::pack_bin(const QByteArray &arr, quint8 *p, bool wr)
         if (wr) _msgpack_store32(p, len);
         p += 4;
     }
+    return p;
+}
+
+quint8 *MsgPackPrivate::pack_bin(const QByteArray &arr, quint8 *p, bool wr)
+{
+    quint32 len = arr.length();
+    p = pack_bin_header(len, p, wr);
     if (wr) memcpy(p, arr.data(), len);
     p += len;
-
     return p;
 }
 

@@ -271,7 +271,7 @@ void PackTest::test_bin()
     QVERIFY(p[2] == 0x00);
     QVERIFY(memcmp(p + 3, ba.data(), ba.size()) == 0);
 
-    ba = QByteArray(65536, 'r');
+    ba = QByteArray(65536, 'x');
     arr = MsgPack::pack(ba);
     QVERIFY(arr.size() == ba.size() + 5);
     p = (quint8 *)arr.data();

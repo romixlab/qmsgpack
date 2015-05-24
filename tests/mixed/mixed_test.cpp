@@ -8,10 +8,84 @@ class MixedTest : public QObject
     Q_OBJECT
 
 private Q_SLOTS:
+    void test_float();
+    void test_double();
     void test_map();
     void test_ext();
     void test_mixed();
 };
+
+void MixedTest::test_float()
+{
+    float f;
+    QByteArray packed;
+
+    packed = MsgPack::pack(0.0f);
+    f = MsgPack::unpack(packed).toFloat();
+    QVERIFY(f == 0.0f);
+    QVERIFY(packed.size() == 5);
+
+    packed = MsgPack::pack(-0.0f);
+    f = MsgPack::unpack(packed).toFloat();
+    QVERIFY(f == -0.0f);
+    QVERIFY(packed.size() == 5);
+
+    packed = MsgPack::pack(1.0f);
+    f = MsgPack::unpack(packed).toFloat();
+    QVERIFY(f == 1.0f);
+    QVERIFY(packed.size() == 5);
+
+    packed = MsgPack::pack(-1.0f);
+    f = MsgPack::unpack(packed).toFloat();
+    QVERIFY(f == -1.0f);
+    QVERIFY(packed.size() == 5);
+
+    packed = MsgPack::pack(32767.0f);
+    f = MsgPack::unpack(packed).toFloat();
+    QVERIFY(f == 32767.0f);
+    QVERIFY(packed.size() == 5);
+
+    packed = MsgPack::pack(-32767.0f);
+    f = MsgPack::unpack(packed).toFloat();
+    QVERIFY(f == -32767.0f);
+    QVERIFY(packed.size() == 5);
+}
+
+void MixedTest::test_double()
+{
+    double d;
+    QByteArray packed;
+
+    packed = MsgPack::pack(0.0);
+    d = MsgPack::unpack(packed).toDouble();
+    QVERIFY(d == 0.0);
+    QVERIFY(packed.size() == 9);
+
+    packed = MsgPack::pack(-0.0);
+    d = MsgPack::unpack(packed).toDouble();
+    QVERIFY(d == -0.0);
+    QVERIFY(packed.size() == 9);
+
+    packed = MsgPack::pack(1.0);
+    d = MsgPack::unpack(packed).toDouble();
+    QVERIFY(d == 1.0);
+    QVERIFY(packed.size() == 9);
+
+    packed = MsgPack::pack(-1.0);
+    d = MsgPack::unpack(packed).toDouble();
+    QVERIFY(d == -1.0);
+    QVERIFY(packed.size() == 9);
+
+    packed = MsgPack::pack(32767.0);
+    d = MsgPack::unpack(packed).toDouble();
+    QVERIFY(d == 32767.0);
+    QVERIFY(packed.size() == 9);
+
+    packed = MsgPack::pack(-32767.0);
+    d = MsgPack::unpack(packed).toDouble();
+    QVERIFY(d == -32767.0);
+    QVERIFY(packed.size() == 9);
+}
 
 void MixedTest::test_map()
 {
