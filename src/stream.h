@@ -1,6 +1,7 @@
 #ifndef STREAM_H
 #define STREAM_H
 #include <QIODevice>
+#include <limits.h>
 
 class MsgPackStream
 {
@@ -44,6 +45,8 @@ public:
     MsgPackStream &operator<<(QString str);
     MsgPackStream &operator<<(const char *str);
     MsgPackStream &operator<<(QByteArray array);
+    bool writeBytes(const char *data, uint len);
+
 
 private:
     QIODevice *dev;
@@ -63,7 +66,22 @@ private:
 template <typename T>
 MsgPackStream& operator<<(MsgPackStream& s, const QList<T> &list)
 {
-    s << (quint32)list.size();
+    quint32 len = list.size();
+    quint8 p[5];
+    if (len <= 15) {
+        p[0] = 0x90 | len;
+        s.writeBytes(p, 1);
+    } else if (len <= std::numeric_limits<quint16>::max()) {
+        p[0] = 0xdc;
+        _msgpack_store16(p + 1, len);
+        s.writeBytes(p, 3);
+    } else {
+        p[0] = 0xdd;
+        _msgpack_store32(p + 1, len);
+        s.writeBytes(p, 5);
+    }
+    if (s.status() != MsgPackStream::Ok)
+        return *this;
     for (int i = 0; i < list.size(); ++i)
         s << list[i];
     return s;

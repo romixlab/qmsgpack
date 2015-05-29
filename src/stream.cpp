@@ -442,6 +442,14 @@ MsgPackStream &MsgPackStream::operator<<(QByteArray array)
     return *this;
 }
 
+bool MsgPackStream::writeBytes(const char *data, uint len)
+{
+    CHECK_STREAM_WRITE_PRECOND(*this);
+    if (dev->write(data, len) != len)
+        setStatus(WriteFailed);
+    return *this;
+}
+
 bool MsgPackStream::unpack_upto_quint8(quint8 &u8, quint8 *p)
 {
     if (*p <= MsgPack::FirstByte::POSITIVE_FIXINT) {

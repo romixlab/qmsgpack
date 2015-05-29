@@ -1,6 +1,7 @@
 *.pro.user*
 build
 lib
-Makefile
+Makefile*
 *.autosave
 bin/
+*.o
