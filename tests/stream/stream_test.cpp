@@ -17,6 +17,7 @@ private Q_SLOTS:
     void test_float();
     void test_double();
     void test_bin();
+    void test_array();
 };
 
 void StreamTest::test_unpack_integers()
@@ -305,6 +306,65 @@ void StreamTest::test_bin()
     stream >> ba;
     QVERIFY(ba == ba3);
     QVERIFY(stream.status() == MsgPackStream::Ok);
+}
+
+void StreamTest::test_array()
+{
+{
+    QList<qint64> list;
+    list << 0 << 127 << -1 << -31 << 128 << 255 << -33 << -128 << 256;
+    list << 65535 << -129 << -32768 << 65536;
+    list << -32769 << (qint32)-2147483648;
+    list << (qint64)-2147483649;
+    list << std::numeric_limits<qint64>::min();
+    QByteArray packed;
+    {
+        MsgPackStream stream(&packed, QIODevice::WriteOnly);
+        stream << list;
+        QVERIFY(stream.status() == MsgPackStream::Ok);
+    }
+
+    QVariantList list2 = MsgPack::unpack(packed).toList();
+    QVERIFY(list.size() == list2.size());
+    for (int i = 0; i < list.size(); ++i)
+        QVERIFY(list[i] == list2[i]);
+
+    packed = MsgPack::pack(list2);
+    MsgPackStream stream(packed);
+    QList<qint64> list3;
+    stream >> list3;
+    QVERIFY(stream.status() == MsgPackStream::Ok);
+    QVERIFY(list2.size() == list3.size());
+    for (int i = 0; i < list2.size(); ++i)
+        QVERIFY(list2[i] == list3[i]);
+}
+{ 
+    QList<quint64> list;
+    list << 6;
+    list << std::numeric_limits<quint64>::min();
+    list << std::numeric_limits<quint64>::max();
+    list << -4;
+    QByteArray packed;
+    {
+        MsgPackStream stream(&packed, QIODevice::WriteOnly);
+        stream << list;
+        QVERIFY(stream.status() == MsgPackStream::Ok);
+    }
+
+    QVariantList list2 = MsgPack::unpack(packed).toList();
+    QVERIFY(list.size() == list2.size());
+    for (int i = 0; i < list.size(); ++i)
+        QVERIFY(list[i] == list2[i]);
+
+    packed = MsgPack::pack(list2);
+    MsgPackStream stream(packed);
+    QList<quint64> list3;
+    stream >> list3;
+    QVERIFY(stream.status() == MsgPackStream::Ok);
+    QVERIFY(list2.size() == list3.size());
+    for (int i = 0; i < list2.size(); ++i)
+        QVERIFY(list2[i] == list3[i]);
+}
 }
 
 QTEST_APPLESS_MAIN(StreamTest)

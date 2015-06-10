@@ -2,7 +2,7 @@
 #include "pack_p.h"
 #include "unpack_p.h"
 #include "stream.h"
-#include "sysdep.h"
+#include "../endianhelper.h"
 
 #include <QDebug>
 

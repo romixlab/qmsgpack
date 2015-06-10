@@ -3,7 +3,6 @@
 #include "private/unpack_p.h"
 #include "private/pack_p.h"
 #include "private/qt_types_p.h"
-#include "private/sysdep.h"
 #include <QVector>
 
 QVariant MsgPack::unpack(const QByteArray &data)

@@ -1,5 +1,5 @@
 #include "pack_p.h"
-#include "private/sysdep.h"
+#include "../endianhelper.h"
 
 #include <QByteArray>
 #include <QDebug>

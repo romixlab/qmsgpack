@@ -1,7 +1,9 @@
 #ifndef STREAM_H
 #define STREAM_H
 #include <QIODevice>
-#include <limits.h>
+#include <limits>
+#include "msgpack_common.h"
+#include "endianhelper.h"
 
 class MsgPackStream
 {
@@ -34,6 +36,7 @@ public:
     MsgPackStream &operator>>(double &d);
     MsgPackStream &operator>>(QString &str);
     MsgPackStream &operator>>(QByteArray &array);
+    bool readBytes(char *data, uint len);
 
     MsgPackStream &operator<<(bool b);
     MsgPackStream &operator<<(quint32 u32);
@@ -47,20 +50,13 @@ public:
     MsgPackStream &operator<<(QByteArray array);
     bool writeBytes(const char *data, uint len);
 
-
 private:
     QIODevice *dev;
     bool owndev;
     Status q_status;
 
-    bool unpack_upto_quint8(quint8 &u8, quint8 *p);
-    bool unpack_upto_quint16(quint16 &u16, quint8 *p);
-    bool unpack_upto_quint32(quint32 &u32, quint8 *p);
-    bool unpack_upto_quint64(quint64 &u64, quint8 *p);
-    bool unpack_upto_qint8(qint8 &i8, quint8 *p);
-    bool unpack_upto_qint16(qint16 &i16, quint8 *p);
-    bool unpack_upto_qint32(qint32 &i32, quint8 *p);
-    bool unpack_upto_qint64(qint64 &i64, quint8 *p);
+    bool unpack_longlong(qint64 &i64);
+    bool unpack_ulonglong(quint64 &u64);
 };
 
 template <typename T>
@@ -69,19 +65,19 @@ MsgPackStream& operator<<(MsgPackStream& s, const QList<T> &list)
     quint32 len = list.size();
     quint8 p[5];
     if (len <= 15) {
-        p[0] = 0x90 | len;
-        s.writeBytes(p, 1);
+        p[0] = MsgPack::FirstByte::FIXARRAY | len;
+        s.writeBytes((const char *)p, 1);
     } else if (len <= std::numeric_limits<quint16>::max()) {
-        p[0] = 0xdc;
+        p[0] = MsgPack::FirstByte::ARRAY16;
         _msgpack_store16(p + 1, len);
-        s.writeBytes(p, 3);
+        s.writeBytes((const char *)p, 3);
     } else {
-        p[0] = 0xdd;
+        p[0] = MsgPack::FirstByte::ARRAY32;
         _msgpack_store32(p + 1, len);
-        s.writeBytes(p, 5);
+        s.writeBytes((const char *)p, 5);
     }
     if (s.status() != MsgPackStream::Ok)
-        return *this;
+        return s;
     for (int i = 0; i < list.size(); ++i)
         s << list[i];
     return s;
@@ -91,9 +87,19 @@ template <typename T>
 MsgPackStream& operator>>(MsgPackStream& s, QList<T> &list)
 {
     list.clear();
-    quint32 size;
-    s >> size;
-    for (quint32 i = 0; i < size; ++i) {
+    quint8 p[5];
+    quint32 len;
+    s.readBytes((char *)p, 1);
+    if (p[0] >= 0x90 && p[0] <= 0x9f) {
+        len = p[0] & 0xf;
+    } else if (p[0] == MsgPack::FirstByte::ARRAY16) {
+        s.readBytes((char *)p + 1, 2);
+        len = _msgpack_load16(quint16, p + 1);
+    } else if (p[0] == MsgPack::FirstByte::ARRAY32) {
+        s.readBytes((char *)p + 1, 4);
+        len = _msgpack_load32(quint32, p + 1);
+    }
+    for (quint32 i = 0; i < len; ++i) {
         T t;
         s >> t;
         list.append(t);
