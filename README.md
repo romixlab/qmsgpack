@@ -1,16 +1,31 @@
+qmsgpack [![Build Status](https://travis-ci.org/romixlab/qmsgpack.svg?branch=master)](https://travis-ci.org/romixlab/qmsgpack)
+========
+
 MessagePack for Qt
-==================
 
 Installation
 ------------
 Clone repository:
 ~~~bash
 git clone https://github.com/romixlab/qmsgpack.git
+~~~
+
+Run cmake:
+~~~bash
 cd qmsgpack
 mkdir build
 cd build
 cmake ..
-make install
+~~~
+
+Compile:
+~~~bash
+make
+~~~
+
+Run tests and install
+~~~bash
+make tests install
 ~~~
 
 Sample usage
@@ -27,16 +42,11 @@ Unpacking:
 QVariantList unpacked = MsgPack::unpack(array).toList();
 ~~~
 
-Streaming API:
-~~~cpp
-// packing
-MsgPackStream stream(&ba, QIODevice::WriteOnly);
-stream << 1 << 2.3 << "some string";
+By default these Qt types are supported: `Int, UInt, LongLong, ULongLong, Double, QByteArray, Bool, QString, QStringList, QVariantList, QVariantMap`.
 
-// unpacking
-MsgPackStream stream(ba);
-int a;
-double b;
-QSting s;
-stream >> a >> b >> s;
-~~~
+Also you can provide packer and unpacker functions for any other type (even for user type defined via `Q_DECLARE_METATYPE`) or MsgPack type.
+
+Thread-safety
+-------------
+At this time it is not safe to call `MsgPack::registerPacker`, `MsgPack::registerUnpacker` and `MsgPack::setCompatibilityModeEnabled` from different threads.
+pack and unpack methods do not use any global data, so should be safe to use from multiple threads.
