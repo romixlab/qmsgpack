@@ -1,7 +1,5 @@
-qmsgpack [![Build Status](https://travis-ci.org/romixlab/qmsgpack.svg?branch=master)](https://travis-ci.org/romixlab/qmsgpack)
-========
-
 MessagePack for Qt
+==================
 
 Installation
 ------------
