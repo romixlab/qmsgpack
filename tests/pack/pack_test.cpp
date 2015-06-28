@@ -9,6 +9,7 @@ class PackTest : public QObject
     Q_OBJECT
 
 private Q_SLOTS:
+    void test_nil();
     void test_bool();
     void test_fixint();
     void test_integer8();
@@ -20,6 +21,14 @@ private Q_SLOTS:
     void test_bin();
     void test_array();
 };
+
+void PackTest::test_nil()
+{
+    QByteArray arr = MsgPack::pack(QVariant());
+    quint8 *p = (quint8 *)arr.data();
+    QVERIFY(arr.size() == 1);
+    QVERIFY(p[0] == 0xc0);
+}
 
 void PackTest::test_bool()
 {
