@@ -23,7 +23,7 @@ void QtTypesTest::test_qtime()
     QByteArray packed = MsgPack::pack(t);
     QTime t2 = MsgPack::unpack(packed).toTime();
     QVERIFY(t == t2);
-    QVERIFY(packed.size() == 3); // user, type, 0xc0
+    QVERIFY(packed.size() == 1);
 
     t = QTime(12, 01, 01, 0);
     packed = MsgPack::pack(t);
@@ -51,7 +51,7 @@ void QtTypesTest::test_qdate()
     QByteArray packed = MsgPack::pack(d);
     QDate d2 = MsgPack::unpack(packed).toDate();
     QVERIFY(d == d2);
-    QVERIFY(packed.size() == 3); // user, type, 0xc0
+    QVERIFY(packed.size() == 1);
 
     d = QDate(1234, 12, 1);
     packed = MsgPack::pack(d);
@@ -70,7 +70,7 @@ void QtTypesTest::test_qpoint()
 
     QPoint pt;
     QByteArray packed = MsgPack::pack(pt);
-    QVERIFY(packed.size() == 3);
+    QVERIFY(packed.size() == 1);
     QPoint pt2 = MsgPack::unpack(packed).toPoint();
     QVERIFY(pt == pt2);
 
@@ -99,7 +99,7 @@ void QtTypesTest::test_qsize()
 
     QSize sz;
     QByteArray packed = MsgPack::pack(sz);
-//    QVERIFY(packed.size() == 3);
+//    QVERIFY(packed.size() == 1);
     QSize sz2 = MsgPack::unpack(packed).toSize();
     QVERIFY(sz == sz2);
 
@@ -121,7 +121,7 @@ void QtTypesTest::test_qrect()
     MsgPack::registerType(QMetaType::QRect, 81);
     QRect r;
     QByteArray packed = MsgPack::pack(r);
-    QVERIFY(packed.size() == 3);
+    QVERIFY(packed.size() == 1);
     QRect r2 = MsgPack::unpack(packed).toRect();
     QVERIFY(r == r2);
 
