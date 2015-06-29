@@ -18,4 +18,5 @@ script:
  - cd build
  - if [ -z ${QT4_BUILD+x} ]; then cmake -DBUILD_TESTS=TRUE -DQT4_BUILD=FALSE ..; else cmake -DBUILD_TESTS=TRUE -DQT4_BUILD=TRUE ..; fi
  - make
+ - export CTEST_OUTPUT_ON_FAILURE=1
  - make test
