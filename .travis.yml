@@ -16,6 +16,6 @@ before_install:
 script:
  - mkdir build
  - cd build
- - cmake ..
+ - if [ -z ${QT4_BUILD+x} ]; then cmake -DBUILD_TESTS=TRUE -DQT4_BUILD=FALSE ..; else cmake -DBUILD_TESTS=TRUE -DQT4_BUILD=TRUE ..; fi
  - make
  - make test

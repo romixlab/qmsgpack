@@ -1,9 +1,8 @@
 #include "qt_types_p.h"
 #include "pack_p.h"
 #include "unpack_p.h"
-#include "stream.h"
-#include "../endianhelper.h"
-
+#include "msgpackstream.h"
+#include "endianhelper.h"
 #include <QDebug>
 
 #ifdef QT_GUI_LIB
@@ -182,7 +181,6 @@ QVariant MsgPackPrivate::unpack_qpoint(const QByteArray &data)
     MsgPackStream stream(data);
     qint32 x, y;
     stream >> x >> y;
-    qDebug() << "unpack qpoint stream" << (stream.status() == MsgPackStream::Ok);
     return QPoint(x, y);
 }
 
