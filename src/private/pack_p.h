@@ -25,6 +25,7 @@ extern bool compatibilityMode;
 
 quint8 * pack(const QVariant &v, quint8 *p, bool wr, QVector<QByteArray> &user_data);
 
+quint8 * pack_nil(quint8 *p, bool wr);
 quint8 * pack_int(qint32 i, quint8 *p, bool wr);
 quint8 * pack_uint(quint32 i, quint8 *p, bool wr);
 quint8 * pack_longlong(qint64 i, quint8 *p, bool wr);
