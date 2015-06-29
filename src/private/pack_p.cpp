@@ -43,17 +43,8 @@ quint8 *MsgPackPrivate::pack(const QVariant &v, quint8 *p, bool wr, QVector<QByt
         p = pack_bin(v.toByteArray(), p, wr);
     else if (t == QMetaType::QVariantMap)
         p = pack_map(v.toMap(), p, wr, user_data);
-    else {
-        if (t == QMetaType::User)
-            t = (QMetaType::Type)v.userType();
-        QReadLocker locker(&packers_lock);
-        bool has_packer = user_packers.contains(t);
-        locker.unlock();
-        if (has_packer)
-            p = pack_user(v, p, wr, user_data);
-        else
-            qWarning() << "MsgPack::pack can't pack type:" << t;
-    }
+    else 
+        p = pack_user(v, p, wr, user_data);
 
     return p;
 }
@@ -328,9 +319,18 @@ bool MsgPackPrivate::register_packer(QMetaType::Type q_type, qint8 msgpack_type,
 
 quint8 *MsgPackPrivate::pack_user(const QVariant &v, quint8 *p, bool wr, QVector<QByteArray> &user_data)
 {
-    QMetaType::Type t = (QMetaType::Type)v.type() == QMetaType::User ?
-                (QMetaType::Type)v.userType() : (QMetaType::Type)v.type();
+    QMetaType::Type t;
+    if (v.type() == QVariant::UserType)
+        t = (QMetaType::Type)v.userType();
+    else
+        t = (QMetaType::Type)v.type();
+
     QReadLocker locker(&packers_lock);
+    bool has_packer = user_packers.contains(t);
+    if (!has_packer) {
+        qWarning() << "MsgPack::pack can't pack type:" << t;
+        return p;
+    }
     packer_t pt = user_packers[t];
     locker.unlock();
 

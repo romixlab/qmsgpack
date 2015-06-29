@@ -69,7 +69,7 @@ QVariant MsgPackPrivate::unpack_qcolor(const QByteArray &data)
 // Date and Time
 void MsgPackPrivate::pack_qtime_raw(const QTime &time, quint8 *p)
 {
-    quint8 hm, ms;
+    quint8 hm = 0, ms = 0;
     hm = (quint8)time.hour() << 4;
     hm |= (quint8)time.minute() >> 2;
     ms = ((quint8)time.minute() << 6) & 0xc0; // 11000000
@@ -98,6 +98,8 @@ QTime MsgPackPrivate::unpack_qtime_raw(quint8 *p, bool with_ms)
 QByteArray MsgPackPrivate::pack_qtime(const QVariant &variant)
 {
     QTime time = variant.toTime();
+    if (time.isNull())
+        return QByteArray("\xc0", 1);
     quint8 size = time.msec() == 0 ? 2 : 4;
     QByteArray data;
     data.resize(size);
@@ -107,6 +109,8 @@ QByteArray MsgPackPrivate::pack_qtime(const QVariant &variant)
 
 QVariant MsgPackPrivate::unpack_qtime(const QByteArray &data)
 {
+    if (data.size() == 1)
+        return QTime();
     return unpack_qtime_raw((quint8 *)data.data(), data.size() == 4);
 }
 
@@ -134,6 +138,9 @@ QDate MsgPackPrivate::unpack_qdate_raw(quint8 *p)
 
 QByteArray MsgPackPrivate::pack_qdate(const QVariant &variant)
 {
+    QDate date = variant.toDate();
+    if (date.isNull())
+        return QByteArray("\xc0", 1);
     QByteArray data;
     data.resize(3);
     pack_qdate_raw(variant.toDate(), (quint8 *)data.data());
@@ -142,12 +149,16 @@ QByteArray MsgPackPrivate::pack_qdate(const QVariant &variant)
 
 QVariant MsgPackPrivate::unpack_qdate(const QByteArray &data)
 {
+    if (data.size() == 1)
+        return QDate();
     return unpack_qdate_raw((quint8 *)data.data());
 }
 
 QByteArray MsgPackPrivate::pack_qdatetime(const QVariant &variant)
 {
     QDateTime dt = variant.toDateTime();
+    if (dt.isNull())
+        return QByteArray("\xc0", 1);
     quint8 time_size = dt.time().msec() == 0 ? 2 : 4;
     QByteArray data;
     data.resize(3 + time_size);
@@ -160,6 +171,8 @@ QByteArray MsgPackPrivate::pack_qdatetime(const QVariant &variant)
 
 QVariant MsgPackPrivate::unpack_qdatetime(const QByteArray &data)
 {
+    if (data.size() == 1)
+        return QDateTime();
     quint8 *p = (quint8 *)data.data();
     QDate d = unpack_qdate_raw(p);
     QTime t = unpack_qtime_raw(p + 3, data.size() == 7);
@@ -169,15 +182,19 @@ QVariant MsgPackPrivate::unpack_qdatetime(const QByteArray &data)
 // Points and Vectors
 QByteArray MsgPackPrivate::pack_qpoint(const QVariant &variant)
 {
+    QPoint point = variant.toPoint();
+    if (point.isNull())
+        return QByteArray("\xc0", 1);
     QByteArray packed;
     MsgPackStream stream(&packed, QIODevice::WriteOnly);
-    QPoint pt = variant.toPoint();
-    stream << pt.x() << pt.y();
+    stream << point.x() << point.y();
     return packed;
 }
 
 QVariant MsgPackPrivate::unpack_qpoint(const QByteArray &data)
 {
+    if (data.size() == 1)
+        return QPoint();
     MsgPackStream stream(data);
     qint32 x, y;
     stream >> x >> y;
@@ -186,15 +203,19 @@ QVariant MsgPackPrivate::unpack_qpoint(const QByteArray &data)
 
 QByteArray MsgPackPrivate::pack_qsize(const QVariant &variant)
 {
+    QSize size = variant.toSize();
+    if (size.isNull())
+        return QByteArray("\xc0", 1);
     QByteArray packed;
     MsgPackStream stream(&packed, QIODevice::WriteOnly);
-    QSize sz = variant.toSize();
-    stream << sz.width() << sz.height();
+    stream << size.width() << size.height();
     return packed;
 }
 
 QVariant MsgPackPrivate::unpack_qsize(const QByteArray &data)
 {
+    if (data.size() == 1)
+        return QSize();
     MsgPackStream stream(data);
     qint32 width, height;
     stream >> width >> height;
@@ -204,6 +225,8 @@ QVariant MsgPackPrivate::unpack_qsize(const QByteArray &data)
 QByteArray MsgPackPrivate::pack_qrect(const QVariant &variant)
 {
     QRect rect = variant.toRect();
+    if (rect.isNull())
+        return QByteArray("\xc0", 1);
     QPoint pt1 = rect.topLeft();
     QPoint pt2 = rect.bottomRight();
     QByteArray packed;
@@ -214,6 +237,8 @@ QByteArray MsgPackPrivate::pack_qrect(const QVariant &variant)
 
 QVariant MsgPackPrivate::unpack_qrect(const QByteArray &data)
 {
+    if (data.size() == 1)
+        return QRect();
     MsgPackStream stream(data);
     qint32 x, y;
     stream >> x >> y;
