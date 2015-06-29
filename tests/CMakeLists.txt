@@ -8,7 +8,7 @@ if (Qt5Core_FOUND)
 	set(TEST_LIBRARIES ${Qt5Test_LIBRARIES})
 endif ()
 
-set(TEST_SUBDIRS pack unpack mixed)
+set(TEST_SUBDIRS pack unpack mixed qttypes stream)
 
 foreach(subdir ${TEST_SUBDIRS})
 	add_subdirectory(${subdir})

@@ -39,6 +39,23 @@ else ()
 	set(PC_Requires "QtCore")
 endif ()
 
+option (QTGUI_TYPES "Build with support for QtGui types")
+if (QTGUI_TYPES)
+	if (QT4_BUILD)
+		find_package(Qt4 QTGUI)
+	else ()
+		find_package(Qt5Gui QUIET)
+	endif ()
+endif ()
+
+if (Qt5Gui_FOUND)
+	message("Qt5Gui found")
+	include_directories(${Qt5Gui_INCLUDE_DIRS})
+	add_definitions(${Qt5Gui_DEFINITIONS})
+else ()
+	message("Qt5Gui not found")
+endif ()
+
 if (NOT WIN32)
 	set(QT_DONT_USE_QTGUI TRUE)
 endif ()
@@ -63,10 +80,10 @@ set(MSGPACK_QT_LIB_VERSION_STRING "${QMSGPACK_MAJOR}.${QMSGPACK_MINOR}.${QMSGPAC
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
 
 add_subdirectory(src)
-#if (MSGPACK_BUILD_TESTS)
+if (BUILD_TESTS)
 	enable_testing()
 	add_subdirectory(tests)
-#endif ()
+endif ()
 
 install(EXPORT qmsgpack-export DESTINATION ${CMAKECONFIG_INSTALL_DIR} FILE MsgPackQtTargets.cmake)
 

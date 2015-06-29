@@ -1,9 +1,12 @@
 #include "unpack_p.h"
-#include "sysdep.h"
+#include "../endianhelper.h"
 
 #include <QByteArray>
 #include <QDebug>
 #include <QMap>
+
+#include <QReadLocker>
+#include <QWriteLocker>
 
 MsgPackPrivate::type_parser_f MsgPackPrivate::unpackers[32] = {
     unpack_nil,
@@ -21,6 +24,7 @@ MsgPackPrivate::type_parser_f MsgPackPrivate::unpackers[32] = {
 };
 
 QHash<qint8, MsgPack::unpack_user_f> MsgPackPrivate::user_unpackers;
+QReadWriteLock MsgPackPrivate::unpackers_lock;
 
 QVariant MsgPackPrivate::unpack(quint8 *p, quint8 *end)
 {
@@ -143,7 +147,7 @@ quint8 * MsgPackPrivate::unpack_int16(QVariant &v, quint8 *p)
 quint8 * MsgPackPrivate::unpack_int32(QVariant &v, quint8 *p)
 {
     p++;
-    v = _msgpack_load32(quint32, p);
+    v = _msgpack_load32(qint32, p);
     return p + 4;
 }
 
@@ -179,7 +183,7 @@ quint8 * MsgPackPrivate::unpack_float64(QVariant &v, quint8 *p)
     for (int i = 0; i < 8; ++i)
         *(fd + 7 - i) = *(p + i);
 #else
-    for (int i = 0; i < 4; ++i)
+    for (int i = 0; i < 8; ++i)
         *(fp + i) = *(p + i);
 #endif
     v = d;
@@ -314,6 +318,7 @@ quint8 * MsgPackPrivate::unpack_map32(QVariant &v, quint8 *p)
 
 quint8 *MsgPackPrivate::unpack_ext(QVariant &v, quint8 *p, qint8 type, quint32 len)
 {
+    QReadLocker locker(&unpackers_lock);
     if (!user_unpackers.contains(type)) {
         qWarning() << "MsgPack::unpack() unpacker for type" << type << "doesn't exist";
         return p + len;
@@ -382,12 +387,13 @@ quint8 * MsgPackPrivate::unpack_ext32(QVariant &v, quint8 *p)
 
 bool MsgPackPrivate::register_unpacker(qint8 msgpack_type, MsgPack::unpack_user_f unpacker)
 {
-    if (user_unpackers.contains(msgpack_type)) {
-        qWarning() << "MsgPack::unpacker for type" << msgpack_type << "already exists";
-        return false;
-    }
     if (unpacker == 0) {
         qWarning() << "MsgPack::unpacker for type" << msgpack_type << "is invalid";
+        return false;
+    }
+    QWriteLocker locker(&unpackers_lock);
+    if (user_unpackers.contains(msgpack_type)) {
+        qWarning() << "MsgPack::unpacker for type" << msgpack_type << "already exists";
         return false;
     }
     user_unpackers.insert(msgpack_type, unpacker);

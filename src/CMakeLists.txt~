@@ -1,5 +1,5 @@
-set(qmsgpack_srcs msgpack.cpp msgpack_common.cpp msgpackstream.cpp private/pack_p.cpp private/unpack_p.cpp private/qt_types_p.cpp)
-set(qmsgpack_headers msgpack.h msgpackstream.h msgpack_common.h msgpack_export.h endianhelper.h)
+set(qmsgpack_srcs msgpack.cpp msgpack_common.cpp stream.cpp private/pack_p.cpp private/unpack_p.cpp private/qt_types_p.cpp)
+set(qmsgpack_headers msgpack.h stream.h msgpack_common.h msgpack_export.h endianhelper.h)
 
 add_library(qmsgpack SHARED ${qmsgpack_srcs} ${qmsgpack_headers})
 

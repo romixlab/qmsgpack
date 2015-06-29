@@ -8,10 +8,84 @@ class MixedTest : public QObject
     Q_OBJECT
 
 private Q_SLOTS:
+    void test_float();
+    void test_double();
     void test_map();
     void test_ext();
     void test_mixed();
 };
+
+void MixedTest::test_float()
+{
+    float f;
+    QByteArray packed;
+
+    packed = MsgPack::pack(0.0f);
+    f = MsgPack::unpack(packed).toFloat();
+    QVERIFY(f == 0.0f);
+    QVERIFY(packed.size() == 5);
+
+    packed = MsgPack::pack(-0.0f);
+    f = MsgPack::unpack(packed).toFloat();
+    QVERIFY(f == -0.0f);
+    QVERIFY(packed.size() == 5);
+
+    packed = MsgPack::pack(1.0f);
+    f = MsgPack::unpack(packed).toFloat();
+    QVERIFY(f == 1.0f);
+    QVERIFY(packed.size() == 5);
+
+    packed = MsgPack::pack(-1.0f);
+    f = MsgPack::unpack(packed).toFloat();
+    QVERIFY(f == -1.0f);
+    QVERIFY(packed.size() == 5);
+
+    packed = MsgPack::pack(32767.0f);
+    f = MsgPack::unpack(packed).toFloat();
+    QVERIFY(f == 32767.0f);
+    QVERIFY(packed.size() == 5);
+
+    packed = MsgPack::pack(-32767.0f);
+    f = MsgPack::unpack(packed).toFloat();
+    QVERIFY(f == -32767.0f);
+    QVERIFY(packed.size() == 5);
+}
+
+void MixedTest::test_double()
+{
+    double d;
+    QByteArray packed;
+
+    packed = MsgPack::pack(0.0);
+    d = MsgPack::unpack(packed).toDouble();
+    QVERIFY(d == 0.0);
+    QVERIFY(packed.size() == 9);
+
+    packed = MsgPack::pack(-0.0);
+    d = MsgPack::unpack(packed).toDouble();
+    QVERIFY(d == -0.0);
+    QVERIFY(packed.size() == 9);
+
+    packed = MsgPack::pack(1.0);
+    d = MsgPack::unpack(packed).toDouble();
+    QVERIFY(d == 1.0);
+    QVERIFY(packed.size() == 9);
+
+    packed = MsgPack::pack(-1.0);
+    d = MsgPack::unpack(packed).toDouble();
+    QVERIFY(d == -1.0);
+    QVERIFY(packed.size() == 9);
+
+    packed = MsgPack::pack(32767.0);
+    d = MsgPack::unpack(packed).toDouble();
+    QVERIFY(d == 32767.0);
+    QVERIFY(packed.size() == 9);
+
+    packed = MsgPack::pack(-32767.0);
+    d = MsgPack::unpack(packed).toDouble();
+    QVERIFY(d == -32767.0);
+    QVERIFY(packed.size() == 9);
+}
 
 void MixedTest::test_map()
 {
@@ -66,17 +140,15 @@ private:
 
 Q_DECLARE_METATYPE(CustomType)
 
-quint32 pack_custom_type(const QVariant &variant, QByteArray &data, bool write)
+QByteArray pack_custom_type(const QVariant &variant)
 {
     CustomType ct = variant.value<CustomType>();
-    if (write) {
-        data.resize(ct.size());
-        quint8 *p = (quint8 *)data.data();
-        for (int i = 0; i < ct.size(); ++i)
-            p[i] = 7;
-    }
-
-    return ct.size();
+    QByteArray data;
+    data.resize(ct.size());
+    quint8 *p = (quint8 *)data.data();
+    for (int i = 0; i < ct.size(); ++i)
+        p[i] = 7;
+    return data;
 }
 
 QVariant unpack_custom_type(const QByteArray &data)
@@ -90,9 +162,11 @@ void MixedTest::test_ext()
     QVariant custom;
     custom.setValue(ct);
 
-    MsgPack::registerPacker((QMetaType::Type)qMetaTypeId<CustomType>(),
+    bool packer_registered = MsgPack::registerPacker((QMetaType::Type)qMetaTypeId<CustomType>(),
                             3, pack_custom_type);
-    MsgPack::registerUnpacker(3, unpack_custom_type);
+    QVERIFY(packer_registered);
+    bool unpacker_registered = MsgPack::registerUnpacker(3, unpack_custom_type);
+    QVERIFY(unpacker_registered);
 
     QByteArray arr = MsgPack::pack(custom);
     QVERIFY(arr.size() == 2 + ct.size());
