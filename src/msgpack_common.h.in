@@ -1,5 +1,5 @@
-#ifndef COMMON_H
-#define COMMON_H
+#ifndef MSGPACK_COMMON_H
+#define MSGPACK_COMMON_H
 
 #include <QVariant>
 #include <QtGlobal>
@@ -69,4 +69,4 @@ const quint8 MAP32      = 0xdf;
 const quint8 NEGATIVE_FIXINT = 0xe0;
 }
 }
-#endif // COMMON_H
+#endif // MSGPACK_COMMON_H
