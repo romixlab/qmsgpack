@@ -3,6 +3,10 @@ qmsgpack [![Build Status](https://travis-ci.org/romixlab/qmsgpack.svg?branch=mas
 
 MessagePack for Qt
 
+Documentation
+-------------
+Complete documentation is available here: [mp.marsw.ru](http://msgpack.marsworks.ru/) (still working on it)
+
 Installation
 ------------
 Clone repository:
