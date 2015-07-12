@@ -1,10 +1,11 @@
-.. qmsgpack documentation master file, created by
-   sphinx-quickstart on Sun Jun 28 11:29:36 2015.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+qmsgpack - MessagePack serializer implementation for Qt
+=======================================================
 
-Welcome to qmsgpack's documentation!
-====================================
+.. toctree::
+   :hidden:
+
+   install.rst
+   basics.rst
 
 Contents:
 
