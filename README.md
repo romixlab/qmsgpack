@@ -3,6 +3,10 @@ qmsgpack [![Build Status](https://travis-ci.org/romixlab/qmsgpack.svg?branch=mas
 
 MessagePack for Qt
 
+Documentation
+-------------
+Complete documentation is available here: [mp.marsw.ru](http://msgpack.marsworks.ru/) (still working on it)
+
 Installation
 ------------
 Clone repository:
@@ -45,6 +49,10 @@ QVariantList unpacked = MsgPack::unpack(array).toList();
 By default these Qt types are supported: `Int, UInt, LongLong, ULongLong, Double, QByteArray, Bool, QString, QStringList, QVariantList, QVariantMap`.
 
 Also you can provide packer and unpacker functions for any other type (even for user type defined via `Q_DECLARE_METATYPE`) or MsgPack type.
+
+Qt types and User types
+-----------------------
+There is packers and unpackers for QColor, QTime, QDate, QDateTime, QPoint, QSize, QRect. Also you can create your own packer/unpacker methods for Qt or your own types. See [docs](http://msgpack.marsworks.ru/) for details.
 
 Thread-safety
 -------------
