@@ -134,7 +134,6 @@ QDate MsgPackPrivate::unpack_qdate_raw(quint8 *p)
 
 QByteArray MsgPackPrivate::pack_qdate(const QVariant &variant)
 {
-    QDate date = variant.toDate();
     QByteArray data;
     data.resize(3);
     pack_qdate_raw(variant.toDate(), (quint8 *)data.data());

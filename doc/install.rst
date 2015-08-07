@@ -77,34 +77,10 @@ Also you can just open ``qmsgpack.pro`` in Qt Creator and build it from there.
 Use it
 ======
 
-Separate build
-^^^^^^^^^^^^^^
-
-In case of CMake and qmake build, just add following lines to your .pro file:
+Just add following lines to your .pro file:
 
 .. code-block:: makefile
 
     LIBS += -lqmsgpack
 
 On Windows you may also set the ``INCLUDEPATH`` variable to appropriate location
-
-qmake subproject
-^^^^^^^^^^^^^^^^
-
-If you are working on a bigger Qt project, building qmsgpack with your project automatically can be very neat feature.
-Below are the list of variables that allows you to do it:
-
-.. cmdoption:: QMSGPACK_SUBPROJECT
-    
-    Settings this variable to ``true`` changes build and destination folder
-
-.. cmdoption:: QMSGPACK_BUILD_DIR
-
-    Build directory, default value: ``../../build/3rdparty``
-
-.. cmdoption:: QMSGPACK_BIN_DIR
-
-    Where to put dynamic library file, default value: ``../../bin``
-
-.. tip::
-    You can use GitHub submodules to automatically clone qmsgpack repository

@@ -59,7 +59,7 @@ endif
 ## -- Rsync Deploy config -- ##
 # Be sure your public key is listed in your server's ~/.ssh/authorized_keys file
 ifndef SSH_USER
-SSH_USER       = roman@marsworks.ru
+SSH_USER       = roman@vds.marsworks.ru
 endif
 
 ifndef SSH_PORT
