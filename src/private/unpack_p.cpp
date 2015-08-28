@@ -4,7 +4,6 @@
 #include <QByteArray>
 #include <QDebug>
 #include <QMap>
-
 #include <QReadLocker>
 #include <QWriteLocker>
 
@@ -67,7 +66,7 @@ quint8 *MsgPackPrivate::unpack_type(QVariant &v, quint8 *p)
 quint8 * MsgPackPrivate::unpack_nil(QVariant &v, quint8 *p)
 {
     Q_UNUSED(p)
-    v = QVariant();
+    Q_UNUSED(v)
     return p + 1;
 }
 

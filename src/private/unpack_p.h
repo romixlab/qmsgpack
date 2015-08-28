@@ -1,7 +1,7 @@
 #ifndef MSGPACK_P_H
 #define MSGPACK_P_H
 
-#include "../msgpack_common.h"
+#include "../msgpackcommon.h"
 
 #include <QHash>
 #include <QVariant>

@@ -1,12 +1,12 @@
-#ifndef MSGPACK_COMMON_H
-#define MSGPACK_COMMON_H
+#ifndef COMMON_H
+#define COMMON_H
 
 #include <QVariant>
 #include <QtGlobal>
 
-#define MSGPACK_MAJOR @QMSGPACK_MAJOR@
-#define MSGPACK_MINOR @QMSGPACK_MINOR@
-#define MSGPACK_VERSION @QMSGPACK_VERSION@
+#define MSGPACK_MAJOR 0
+#define MSGPACK_MINOR 1
+#define MSGPACK_VERSION 0
 
 namespace MsgPack {
 /**
@@ -36,8 +36,8 @@ const quint8 FIXARRAY   = 0x90;
 const quint8 FIXSTR     = 0xa0;
 const quint8 NIL        = 0xc0;
 const quint8 NEVER_USED = 0xc1;
-const quint8 MFALSE      = 0xc2;
-const quint8 MTRUE       = 0xc3;
+const quint8 FALSE      = 0xc2;
+const quint8 TRUE       = 0xc3;
 const quint8 BIN8       = 0xc4;
 const quint8 BIN16      = 0xc5;
 const quint8 BIN32      = 0xc6;
@@ -69,4 +69,4 @@ const quint8 MAP32      = 0xdf;
 const quint8 NEGATIVE_FIXINT = 0xe0;
 }
 }
-#endif // MSGPACK_COMMON_H
+#endif // COMMON_H

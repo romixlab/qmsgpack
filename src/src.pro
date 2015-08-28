@@ -1,44 +1,52 @@
-TEMPLATE        =  lib
-CONFIG          += shared
-QMAKE_CXXFLAGS  += -std=c++11
-TARGET          =  qmsgpack
-DEFINES         += MSGPACK_MAKE_LIB
-VERSION         =  0.1.0
+QT       += core
+QT       -= gui
+
+TARGET = qmsgpack
+CONFIG   -= app_bundle
+
+TEMPLATE = lib
+DEFINES += MSGPACK_MAKE_LIB
+DESTDIR = $$TOP_SRCDIR/bin
+QMAKE_CXXFLAGS += -fPIC
+
+CONFIG   += debug_and_release
+CONFIG(debug, debug|release) {
+     TARGET = $$join(TARGET,,,d)
+}
+
+
+SOURCES += msgpack.cpp \
+    msgpackcommon.cpp \
+    private/pack_p.cpp \
+    private/unpack_p.cpp \
+    private/qt_types_p.cpp \
+    msgpackstream.cpp
 
 HEADERS += \
-    msgpack_common.h \
-    msgpackstream.h \
-    msgpack_export.h \
     msgpack.h \
-    endianhelper.h \
+    private/pack_p.h \
     private/unpack_p.h \
+    endianhelper.h \
+    msgpackcommon.h \
+    msgpack_export.h \
     private/qt_types_p.h \
-    private/pack_p.h
-
-SOURCES += \
-    msgpackstream.cpp \
-    msgpack_common.cpp \
-    msgpack.cpp \
-    private/qt_types_p.cpp \
-    private/unpack_p.cpp \
-    private/pack_p.cpp
-
-release: DESTDIR = ../build/release
-debug:   DESTDIR = ../build/debug
-OBJECTS_DIR = $$DESTDIR/obj
-MOC_DIR = $$DESTDIR/moc
+    msgpackstream.h
 
 HEADERS_INSTALL = \
-    msgpack_common.h \
-    msgpackstream.h \
-    msgpack_export.h \
     msgpack.h \
-    endianhelper.h
+    endianhelper.h \
+    msgpackcommon.h \
+    msgpack_export.h \
+    msgpackstream.h \
+
+STREAM_HEADERS_INSTALL = \
+    stream/location.h
 
 unix {
     header_files.files = $$HEADERS_INSTALL
     header_files.path = /usr/include/qmsgpack
+    stream_header_files.files = $$STREAM_HEADERS_INSTALL
+    stream_header_files.path = /usr/include/qmsgpack/stream
     target.path = /usr/lib
-    INSTALLS += header_files target
+    INSTALLS += header_files stream_header_files target
 }
-

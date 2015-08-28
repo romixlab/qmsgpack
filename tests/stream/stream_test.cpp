@@ -1,5 +1,6 @@
 #include <QString>
 #include <QtTest>
+#include <QDebug>
 #include <msgpackstream.h>
 #include <msgpack.h>
 #include <limits>
@@ -17,7 +18,6 @@ private Q_SLOTS:
     void test_double();
     void test_bin();
     void test_array();
-    void test_map();
 };
 
 void StreamTest::test_unpack_integers()
@@ -142,7 +142,7 @@ void StreamTest::test_pack_integers()
 
 void StreamTest::test_unpack_string()
 {
-    QString str = QString("msgpack rocks");
+    QString str = QStringLiteral("msgpack rocks");
     QByteArray packed = MsgPack::pack(str);
     QString str2;
 
@@ -365,48 +365,6 @@ void StreamTest::test_array()
     for (int i = 0; i < list2.size(); ++i)
         QVERIFY(list2[i] == list3[i]);
 }
-}
-
-void StreamTest::test_map()
-{
-    QMap<QString, int> map, map2;
-    QByteArray ba;
-
-    map.insert("m0", 0);
-    {
-        MsgPackStream stream(&ba, QIODevice::WriteOnly);
-        stream << map;
-        MsgPackStream stream2(ba);
-        stream2 >> map2;
-    }
-    QVERIFY(ba.length() == 5);
-    quint8 *p = (quint8 *)ba.data();
-    QVERIFY(p[0] == 0x80 | 1);
-    QVERIFY(map == map2);
-
-    for (int i = 1; i < 16; ++i)
-        map.insert(QString("m%1").QString::arg(i), i);
-    {
-        MsgPackStream stream(&ba, QIODevice::WriteOnly);
-        stream << map;
-        MsgPackStream stream2(ba);
-        stream2 >> map2;
-    }
-    p = (quint8 *)ba.data();
-    QVERIFY(p[0] == 0xde);
-    QVERIFY(map == map2);
-
-    for (int i = 16; i < 65536; ++i)
-        map.insert(QString("m%1").QString::arg(i), i);
-    {
-        MsgPackStream stream(&ba, QIODevice::WriteOnly);
-        stream << map;
-        MsgPackStream stream2(ba);
-        stream2 >> map2;
-    }
-    p = (quint8 *)ba.data();
-    QVERIFY(p[0] == 0xdf);
-    QVERIFY(map == map2);
 }
 
 QTEST_APPLESS_MAIN(StreamTest)

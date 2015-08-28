@@ -1,8 +1,8 @@
 #ifndef MSGPACK_H
 #define MSGPACK_H
 
-#include "msgpack_common.h"
 #include "msgpack_export.h"
+#include "msgpackcommon.h"
 
 #include <QByteArray>
 #include <QVariantList>

@@ -1,5 +1,5 @@
-set(qmsgpack_srcs msgpack.cpp msgpack_common.cpp msgpackstream.cpp private/pack_p.cpp private/unpack_p.cpp private/qt_types_p.cpp)
-set(qmsgpack_headers msgpack.h msgpackstream.h msgpack_common.h msgpack_export.h endianhelper.h)
+set(qmsgpack_srcs msgpack.cpp msgpackcommon.cpp msgpackstream.cpp private/pack_p.cpp private/unpack_p.cpp private/qt_types_p.cpp)
+set(qmsgpack_headers msgpack.h msgpackstream.h msgpackcommon.h msgpack_export.h endianhelper.h)
 
 add_library(qmsgpack SHARED ${qmsgpack_srcs} ${qmsgpack_headers})
 
@@ -14,8 +14,8 @@ if (Qt5Gui_FOUND)
 endif ()
 
 configure_file(
-  "${CMAKE_CURRENT_SOURCE_DIR}/msgpack_common.h.in"
-  "${CMAKE_CURRENT_SOURCE_DIR}/msgpack_common.h"
+  "${CMAKE_CURRENT_SOURCE_DIR}/msgpackcommon.h.in"
+  "${CMAKE_CURRENT_SOURCE_DIR}/msgpackcommon.h"
   IMMEDIATE @ONLY)
 
 if (NOT android)

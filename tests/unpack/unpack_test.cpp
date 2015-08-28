@@ -9,7 +9,6 @@ class UnpackTest : public QObject
     Q_OBJECT
 
 private Q_SLOTS:
-    void test_nil();
     void test_booleans();
     void test_integers();
     void test_floats();
@@ -18,13 +17,6 @@ private Q_SLOTS:
     void test_array();
 };
 
-void UnpackTest::test_nil()
-{
-    QByteArray pack = MsgPack::pack(QVariantList() << true << QVariant());
-    QVariantList u = MsgPack::unpack(pack).toList();
-    QVERIFY(u[0] == true);
-    QVERIFY(u[1].isNull());
-}
 
 void UnpackTest::test_booleans()
 {

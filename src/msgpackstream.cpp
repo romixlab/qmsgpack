@@ -1,5 +1,6 @@
 #include "msgpackstream.h"
 #include "private/pack_p.h"
+
 #include <QBuffer>
 #include <QDebug>
 
@@ -27,7 +28,7 @@ MsgPackStream::MsgPackStream() :
 { }
 
 MsgPackStream::MsgPackStream(QIODevice *d) :
-    dev(d), owndev(false), q_status(Ok)
+    dev(d), owndev(false)
 { }
 
 MsgPackStream::MsgPackStream(QByteArray *a, QIODevice::OpenMode mode) :
@@ -61,6 +62,11 @@ void MsgPackStream::setDevice(QIODevice *d)
     owndev = false;
 }
 
+QIODevice *MsgPackStream::device() const
+{
+    return dev;
+}
+
 bool MsgPackStream::atEnd() const
 {
     return dev ? dev->atEnd() : true;
@@ -89,10 +95,10 @@ MsgPackStream &MsgPackStream::operator>>(bool &b)
         b = false;
         setStatus(ReadPastEnd);
     } else {
-        if (p[0] != MsgPack::FirstByte::MTRUE ||
-            p[0] != MsgPack::FirstByte::MFALSE)
+        if (p[0] != MsgPack::FirstByte::TRUE ||
+            p[0] != MsgPack::FirstByte::FALSE)
             setStatus(ReadCorruptData);
-        b = (p[0] == MsgPack::FirstByte::MTRUE);
+        b = (p[0] == MsgPack::FirstByte::TRUE);
     }
     return *this;
 }
@@ -319,23 +325,11 @@ bool MsgPackStream::readBytes(char *data, uint len)
     return dev->read(data, len) == len;
 }
 
-bool MsgPackStream::readNil()
-{
-    CHECK_STREAM_PRECOND(false);
-    quint8 b;
-    if (dev->read((char *)&b, 1) != 1 ||
-        b != MsgPack::FirstByte::NIL) {
-        setStatus(ReadCorruptData);
-        return false;
-    }
-    return true;
-}
-
 MsgPackStream &MsgPackStream::operator<<(bool b)
 {
     CHECK_STREAM_WRITE_PRECOND(*this);
     quint8 m = b == true ?
-                MsgPack::FirstByte::MTRUE : MsgPack::FirstByte::MFALSE;
+                MsgPack::FirstByte::TRUE : MsgPack::FirstByte::FALSE;
     if (dev->write((char *)&m, 1) != 1)
         setStatus(WriteFailed);
     return *this;
@@ -446,21 +440,8 @@ MsgPackStream &MsgPackStream::operator<<(QByteArray array)
 bool MsgPackStream::writeBytes(const char *data, uint len)
 {
     CHECK_STREAM_WRITE_PRECOND(false);
-    if (dev->write(data, len) != len) {
+    if (dev->write(data, len) != len)
         setStatus(WriteFailed);
-        return false;
-    }
-    return true;
-}
-
-bool MsgPackStream::writeNil()
-{
-    CHECK_STREAM_WRITE_PRECOND(false);
-    quint8 b = MsgPack::FirstByte::NIL;
-    if (dev->write((char *)&b, 1) != 1) {
-        setStatus(WriteFailed);
-        return false;
-    }
     return true;
 }
 
@@ -501,7 +482,7 @@ bool MsgPackStream::unpack_longlong(qint64 &i64)
     } else if (p[0] == MsgPack::FirstByte::UINT64) {
         quint64 u64;
         u64 = _msgpack_load64(quint64, p + 1);
-        if (u64 > std::numeric_limits<qint64>::max()) {
+        if (u64 > (quint64)std::numeric_limits<qint64>::max()) {
             setStatus(ReadCorruptData);
             return false;
         }

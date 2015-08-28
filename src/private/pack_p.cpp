@@ -1,14 +1,13 @@
 #include "pack_p.h"
 #include "../endianhelper.h"
 
+#include <limits>
+
 #include <QByteArray>
 #include <QDebug>
 #include <QMapIterator>
 #include <QString>
 #include <QStringList>
-
-#include <limits>
-
 #include <QReadLocker>
 #include <QWriteLocker>
 
@@ -19,10 +18,7 @@ QReadWriteLock MsgPackPrivate::packers_lock;
 quint8 *MsgPackPrivate::pack(const QVariant &v, quint8 *p, bool wr, QVector<QByteArray> &user_data)
 {
     QMetaType::Type t = (QMetaType::Type)v.type();
-
-    if (v.isNull())
-        p = pack_nil(p, wr);
-    else if (t == QMetaType::Int)
+    if (t == QMetaType::Int)
         p = pack_int(v.toInt(), p, wr);
     else if (t == QMetaType::UInt)
         p = pack_uint(v.toUInt(), p, wr);
@@ -46,17 +42,19 @@ quint8 *MsgPackPrivate::pack(const QVariant &v, quint8 *p, bool wr, QVector<QByt
         p = pack_bin(v.toByteArray(), p, wr);
     else if (t == QMetaType::QVariantMap)
         p = pack_map(v.toMap(), p, wr, user_data);
-    else 
-        p = pack_user(v, p, wr, user_data);
+    else {
+        if (t == QMetaType::User)
+            t = (QMetaType::Type)v.userType();
+        QReadLocker locker(&packers_lock);
+        bool has_packer = user_packers.contains(t);
+        locker.unlock();
+        if (has_packer)
+            p = pack_user(v, p, wr, user_data);
+        else
+            qWarning() << "MsgPack::pack can't pack type:" << t;
+    }
 
     return p;
-}
-
-quint8 *MsgPackPrivate::pack_nil(quint8 *p, bool wr)
-{
-    if (wr)
-        *p = 0xc0;
-    return p + 1;
 }
 
 quint8 *MsgPackPrivate::pack_int(qint32 i, quint8 *p, bool wr)
@@ -329,18 +327,9 @@ bool MsgPackPrivate::register_packer(QMetaType::Type q_type, qint8 msgpack_type,
 
 quint8 *MsgPackPrivate::pack_user(const QVariant &v, quint8 *p, bool wr, QVector<QByteArray> &user_data)
 {
-    QMetaType::Type t;
-    if (v.type() == QVariant::UserType)
-        t = (QMetaType::Type)v.userType();
-    else
-        t = (QMetaType::Type)v.type();
-
+    QMetaType::Type t = (QMetaType::Type)v.type() == QMetaType::User ?
+                (QMetaType::Type)v.userType() : (QMetaType::Type)v.type();
     QReadLocker locker(&packers_lock);
-    bool has_packer = user_packers.contains(t);
-    if (!has_packer) {
-        qWarning() << "MsgPack::pack can't pack type:" << t;
-        return p;
-    }
     packer_t pt = user_packers[t];
     locker.unlock();
 

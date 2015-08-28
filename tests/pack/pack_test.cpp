@@ -9,7 +9,6 @@ class PackTest : public QObject
     Q_OBJECT
 
 private Q_SLOTS:
-    void test_nil();
     void test_bool();
     void test_fixint();
     void test_integer8();
@@ -21,14 +20,6 @@ private Q_SLOTS:
     void test_bin();
     void test_array();
 };
-
-void PackTest::test_nil()
-{
-    QByteArray arr = MsgPack::pack(QVariant());
-    quint8 *p = (quint8 *)arr.data();
-    QVERIFY(arr.size() == 1);
-    QVERIFY(p[0] == 0xc0);
-}
 
 void PackTest::test_bool()
 {
@@ -225,7 +216,7 @@ void PackTest::test_float()
 
 void PackTest::test_str()
 {
-    QString str = QString("msgpack rocks");
+    QString str = QStringLiteral("msgpack rocks");
     QByteArray arr = MsgPack::pack(str);
     QVERIFY(arr.size() == 14);
     quint8 *p = (quint8 *)arr.data();

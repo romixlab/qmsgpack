@@ -74,11 +74,11 @@ void QtTypesTest::test_qpoint()
     QPoint pt2 = MsgPack::unpack(packed).toPoint();
     QVERIFY(pt == pt2);
 
-	pt = QPoint(1, 2);
-	packed = MsgPack::pack(pt);
-	QVERIFY(packed.size() == 4);
-	pt2 = MsgPack::unpack(packed).toPoint();
-	QVERIFY(pt == pt2);
+    pt = QPoint(1, 2);
+    packed = MsgPack::pack(pt);
+    QVERIFY(packed.size() == 4);
+    pt2 = MsgPack::unpack(packed).toPoint();
+    QVERIFY(pt == pt2);
 
     pt = QPoint(1234, 5678);
     packed = MsgPack::pack(pt);

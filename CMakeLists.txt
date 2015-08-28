@@ -80,10 +80,10 @@ set(MSGPACK_QT_LIB_VERSION_STRING "${QMSGPACK_MAJOR}.${QMSGPACK_MINOR}.${QMSGPAC
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
 
 add_subdirectory(src)
-if (BUILD_TESTS)
+#if (MSGPACK_BUILD_TESTS)
 	enable_testing()
 	add_subdirectory(tests)
-endif ()
+#endif ()
 
 install(EXPORT qmsgpack-export DESTINATION ${CMAKECONFIG_INSTALL_DIR} FILE MsgPackQtTargets.cmake)
 

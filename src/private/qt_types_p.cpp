@@ -1,8 +1,9 @@
 #include "qt_types_p.h"
 #include "pack_p.h"
 #include "unpack_p.h"
-#include "msgpackstream.h"
-#include "endianhelper.h"
+#include "../msgpackstream.h"
+#include "../endianhelper.h"
+
 #include <QDebug>
 
 #ifdef QT_GUI_LIB
@@ -69,7 +70,7 @@ QVariant MsgPackPrivate::unpack_qcolor(const QByteArray &data)
 // Date and Time
 void MsgPackPrivate::pack_qtime_raw(const QTime &time, quint8 *p)
 {
-    quint8 hm = 0, ms = 0;
+    quint8 hm, ms;
     hm = (quint8)time.hour() << 4;
     hm |= (quint8)time.minute() >> 2;
     ms = ((quint8)time.minute() << 6) & 0xc0; // 11000000
@@ -169,10 +170,10 @@ QVariant MsgPackPrivate::unpack_qdatetime(const QByteArray &data)
 // Points and Vectors
 QByteArray MsgPackPrivate::pack_qpoint(const QVariant &variant)
 {
-    QPoint point = variant.toPoint();
     QByteArray packed;
     MsgPackStream stream(&packed, QIODevice::WriteOnly);
-    stream << point.x() << point.y();
+    QPoint pt = variant.toPoint();
+    stream << pt.x() << pt.y();
     return packed;
 }
 
@@ -181,15 +182,16 @@ QVariant MsgPackPrivate::unpack_qpoint(const QByteArray &data)
     MsgPackStream stream(data);
     qint32 x, y;
     stream >> x >> y;
+    qDebug() << "unpack qpoint stream" << (stream.status() == MsgPackStream::Ok);
     return QPoint(x, y);
 }
 
 QByteArray MsgPackPrivate::pack_qsize(const QVariant &variant)
 {
-    QSize size = variant.toSize();
     QByteArray packed;
     MsgPackStream stream(&packed, QIODevice::WriteOnly);
-    stream << size.width() << size.height();
+    QSize sz = variant.toSize();
+    stream << sz.width() << sz.height();
     return packed;
 }
 
