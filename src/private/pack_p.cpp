@@ -47,6 +47,8 @@ quint8 *MsgPackPrivate::pack(const QVariant &v, quint8 *p, bool wr, QVector<QByt
             t = (QMetaType::Type)v.userType();
         QReadLocker locker(&packers_lock);
         bool has_packer = user_packers.contains(t);
+        if (has_packer)
+            has_packer &= user_packers[t].packer != 0;
         locker.unlock();
         if (has_packer)
             p = pack_user(v, p, wr, user_data);
@@ -309,10 +311,6 @@ quint8 *MsgPackPrivate::pack_map(const QVariantMap &map, quint8 *p, bool wr, QVe
 
 bool MsgPackPrivate::register_packer(QMetaType::Type q_type, qint8 msgpack_type, MsgPack::pack_user_f packer)
 {
-    if (packer == 0) {
-        qWarning() << "MsgPack::packer for qtype" << q_type << "is invalid";
-        return false;
-    }
     QWriteLocker locker(&packers_lock);
     if (user_packers.contains(q_type)) {
         qWarning() << "MsgPack::packer for qtype" << q_type << "already exist";
@@ -323,6 +321,14 @@ bool MsgPackPrivate::register_packer(QMetaType::Type q_type, qint8 msgpack_type,
     p.type = msgpack_type;
     user_packers.insert(q_type, p);
     return true;
+}
+
+qint8 MsgPackPrivate::msgpack_type(QMetaType::Type q_type)
+{
+    QReadLocker locker(&packers_lock);
+    if (user_packers.contains(q_type))
+        return user_packers[q_type].type;
+    return -1;
 }
 
 quint8 *MsgPackPrivate::pack_user(const QVariant &v, quint8 *p, bool wr, QVector<QByteArray> &user_data)

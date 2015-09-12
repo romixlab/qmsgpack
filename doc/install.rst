@@ -5,7 +5,7 @@ Installation
    :depth:  4
 
 qmsgpack is a pure Qt library (Qt4 and Qt5 supported), so you can build it for almost any platform Qt supports.
-Also there are several build options:
+There are two build methods:
 
  - CMake
  - qmake
@@ -47,6 +47,14 @@ There are several useful cmake options available:
 .. cmdoption:: -DCMAKE_BUILD_TYPE=Debug
     
     Change build type to debug mode (default is `Release`), could be very useful if something goes wrong
+
+.. cmdoption:: -DWITH_GUI_TYPES=True
+
+    Build with support for QtGui types (QColor)
+
+.. cmdoption:: -DWITH_LOCATION_TYPES=True
+
+    Build with support for QtLocation types(QGeoCoordinate). Might not work, because CMake seems to be failing to find QtLocation, in this case you can try qmake instead.
 
 Add options before ``..`` as follow:
 

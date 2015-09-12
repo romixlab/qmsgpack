@@ -73,6 +73,22 @@ Unpacking is handled by ``MsgPack::unpack()`` function:
     If packed data contains only one msgpack type (fixstr of fixmap for example), unpack will return it as ``QVariant(QString())`` and ``QVariant(QMap())`` respectively.
     But if there are several values packed, ``QVariant(QList())`` will be returned (consider this 5 bool values packed without msgpack's list: [0xc3, 0xc3, 0xc3, 0xc3, 0xc3])
 
+More types
+==========
+
+There are built in packers and unpackers (basic and stream ones) for following types:
+``QPoint, QSize, QRect, QTime, QDate, QDateTime, QColor, QGeoCoordinate``.
+But since there is no such types in msgpack spec, ext type is used.
+
+Example:
+
+.. code-block:: cpp
+
+    MsgPack::registerType(QMetaType::QPoint, 37); // 37 is msgpack user type id
+    QByteArray ba = MsgPack::pack(QPoint(12, 34));
+    qDebug() << MsgPack::unpack(ba).toPoint();
+
+Note, that QColor and QGeoCoordinate is enabled by default only in qmake project.
 
 Thread safety
 =============

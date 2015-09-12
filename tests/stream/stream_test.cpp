@@ -3,6 +3,8 @@
 #include <QDebug>
 #include <msgpackstream.h>
 #include <msgpack.h>
+#include <stream/time.h>
+#include <stream/geometry.h>
 #include <limits>
 
 class StreamTest : public QObject
@@ -18,6 +20,9 @@ private Q_SLOTS:
     void test_double();
     void test_bin();
     void test_array();
+    void test_ext();
+    void test_time();
+    void test_geometry();
 };
 
 void StreamTest::test_unpack_integers()
@@ -365,6 +370,358 @@ void StreamTest::test_array()
     for (int i = 0; i < list2.size(); ++i)
         QVERIFY(list2[i] == list3[i]);
 }
+}
+
+void StreamTest::test_ext()
+{
+    {
+        QByteArray ba;
+        MsgPackStream out(&ba, QIODevice::WriteOnly);
+        out.writeExtHeader(1, 7);
+        QVERIFY(out.status() == MsgPackStream::Ok);
+        quint8 *p = (quint8 *)ba.data();
+        QVERIFY(ba.length() == 2);
+        QVERIFY(p[0] == 0xd4);
+        QVERIFY(p[1] == 7);
+
+        MsgPackStream in(ba);
+        quint32 len;
+        QVERIFY(in.readExtHeader(len));
+        QVERIFY(in.status() == MsgPackStream::Ok);
+        QVERIFY(len == 1);
+        QVERIFY(in.device()->pos() == 2);
+    }
+    {
+        QByteArray ba;
+        MsgPackStream out(&ba, QIODevice::WriteOnly);
+        out.writeExtHeader(17, 7);
+        QVERIFY(out.status() == MsgPackStream::Ok);
+        quint8 *p = (quint8 *)ba.data();
+        QVERIFY(ba.length() == 3);
+        QVERIFY(p[0] == 0xc7);
+        QVERIFY(p[2] == 7);
+
+        MsgPackStream in(ba);
+        quint32 len;
+        QVERIFY(in.readExtHeader(len));
+        QVERIFY(in.status() == MsgPackStream::Ok);
+        QVERIFY(len == 17);
+        QVERIFY(in.device()->pos() == 3);
+    }
+    {
+        QByteArray ba;
+        MsgPackStream out(&ba, QIODevice::WriteOnly);
+        out.writeExtHeader(256, 7);
+        QVERIFY(out.status() == MsgPackStream::Ok);
+        quint8 *p = (quint8 *)ba.data();
+        QVERIFY(ba.length() == 4);
+        QVERIFY(p[0] == 0xc8);
+        QVERIFY(p[3] == 7);
+
+        MsgPackStream in(ba);
+        quint32 len;
+        QVERIFY(in.readExtHeader(len));
+        QVERIFY(in.status() == MsgPackStream::Ok);
+        QVERIFY(len == 256);
+        QVERIFY(in.device()->pos() == 4);
+    }
+    {
+        QByteArray ba;
+        MsgPackStream out(&ba, QIODevice::WriteOnly);
+        out.writeExtHeader(65536, 7);
+        QVERIFY(out.status() == MsgPackStream::Ok);
+        quint8 *p = (quint8 *)ba.data();
+        QVERIFY(ba.length() == 6);
+        QVERIFY(p[0] == 0xc9);
+        QVERIFY(p[5] == 7);
+
+        MsgPackStream in(ba);
+        quint32 len;
+        QVERIFY(in.readExtHeader(len));
+        QVERIFY(in.status() == MsgPackStream::Ok);
+        QVERIFY(len == 65536);
+        QVERIFY(in.device()->pos() == 6);
+    }
+}
+
+void StreamTest::test_time()
+{
+    MsgPack::registerType(QMetaType::QTime, 3);
+    MsgPack::registerType(QMetaType::QDate, 4);
+    MsgPack::registerType(QMetaType::QDateTime, 5);
+    {
+        QTime t;
+        QByteArray ba;
+        MsgPackStream out(&ba, QIODevice::WriteOnly);
+        out << t;
+        QVERIFY(out.status() == MsgPackStream::Ok);
+        QVERIFY(ba.length() == 3);
+
+        MsgPackStream in(ba);
+        QTime t2;
+        in >> t2;
+        QVERIFY(out.status() == MsgPackStream::Ok);
+        QVERIFY(t == t2);
+    }
+    {
+        QTime t = QTime(12, 01, 01, 0);
+        QByteArray ba;
+        MsgPackStream out(&ba, QIODevice::WriteOnly);
+        out << t;
+        QVERIFY(out.status() == MsgPackStream::Ok);
+        QVERIFY(ba.length() == 4);
+
+        MsgPackStream in(ba);
+        QTime t2;
+        in >> t2;
+        QVERIFY(out.status() == MsgPackStream::Ok);
+        QVERIFY(t == t2);
+    }
+    {
+        QTime t = QTime(12, 59, 59, 0);
+        QByteArray ba;
+        MsgPackStream out(&ba, QIODevice::WriteOnly);
+        out << t;
+        QVERIFY(out.status() == MsgPackStream::Ok);
+        QVERIFY(ba.length() == 4);
+
+        MsgPackStream in(ba);
+        QTime t2;
+        in >> t2;
+        QVERIFY(out.status() == MsgPackStream::Ok);
+        QVERIFY(t == t2);
+    }
+    {
+        QTime t = QTime(12, 34, 56, 789);
+        QByteArray ba;
+        MsgPackStream out(&ba, QIODevice::WriteOnly);
+        out << t;
+        QVERIFY(out.status() == MsgPackStream::Ok);
+        QVERIFY(ba.length() == 6);
+
+        MsgPackStream in(ba);
+        QTime t2;
+        in >> t2;
+        QVERIFY(out.status() == MsgPackStream::Ok);
+        QVERIFY(t == t2);
+    }
+    {
+        QDate d;
+        QByteArray ba;
+        MsgPackStream out(&ba, QIODevice::WriteOnly);
+        out << d;
+        QVERIFY(out.status() == MsgPackStream::Ok);
+        QVERIFY(ba.length() == 3);
+
+        MsgPackStream in(ba);
+        QDate d2;
+        in >> d2;
+        QVERIFY(out.status() == MsgPackStream::Ok);
+        QVERIFY(d == d2);
+    }
+    {
+        QDate d = QDate(1234, 12, 1);
+        QByteArray ba;
+        MsgPackStream out(&ba, QIODevice::WriteOnly);
+        out << d;
+        QVERIFY(out.status() == MsgPackStream::Ok);
+        QVERIFY(ba.length() == 6);
+
+        MsgPackStream in(ba);
+        QDate d2;
+        in >> d2;
+        QVERIFY(out.status() == MsgPackStream::Ok);
+        QVERIFY(d == d2);
+    }
+    {
+        QDate d = QDate(9999, 1, 31);
+        QByteArray ba;
+        MsgPackStream out(&ba, QIODevice::WriteOnly);
+        out << d;
+        QVERIFY(out.status() == MsgPackStream::Ok);
+        QVERIFY(ba.length() == 6);
+
+        MsgPackStream in(ba);
+        QDate d2;
+        in >> d2;
+        QVERIFY(out.status() == MsgPackStream::Ok);
+        QVERIFY(d == d2);
+    }
+    {
+        QDateTime dt;
+        QByteArray ba;
+        MsgPackStream out(&ba, QIODevice::WriteOnly);
+        out << dt;
+        QVERIFY(out.status() == MsgPackStream::Ok);
+        QVERIFY(ba.length() == 3);
+
+        MsgPackStream in(ba);
+        QDateTime dt2;
+        in >> dt2;
+        QVERIFY(out.status() == MsgPackStream::Ok);
+        QVERIFY(dt == dt2);
+    }
+    {
+        QDateTime dt(QDate(1234, 12, 1), QTime(12, 34, 56));
+        QByteArray ba;
+        MsgPackStream out(&ba, QIODevice::WriteOnly);
+        out << dt;
+        QVERIFY(out.status() == MsgPackStream::Ok);
+        QVERIFY(ba.length() == 8);
+
+        MsgPackStream in(ba);
+        QDateTime dt2;
+        in >> dt2;
+        QVERIFY(out.status() == MsgPackStream::Ok);
+        QVERIFY(dt == dt2);
+    }
+    {
+        QDateTime dt(QDate(1234, 12, 1), QTime(12, 34, 56, 789));
+        QByteArray ba;
+        MsgPackStream out(&ba, QIODevice::WriteOnly);
+        out << dt;
+        QVERIFY(out.status() == MsgPackStream::Ok);
+        QVERIFY(ba.length() == 10);
+
+        MsgPackStream in(ba);
+        QDateTime dt2;
+        in >> dt2;
+        QVERIFY(out.status() == MsgPackStream::Ok);
+        QVERIFY(dt == dt2);
+    }
+}
+
+void StreamTest::test_geometry()
+{
+    MsgPack::registerType(QMetaType::QPoint, 6);
+    MsgPack::registerType(QMetaType::QSize, 7);
+    MsgPack::registerType(QMetaType::QRect, 8);
+    {
+        QPoint pt;
+        QByteArray ba;
+        MsgPackStream out(&ba, QIODevice::WriteOnly);
+        out << pt;
+        QVERIFY(out.status() == MsgPackStream::Ok);
+        QVERIFY(ba.length() == 3);
+
+        MsgPackStream in(ba);
+        QPoint pt2;
+        in >> pt2;
+        QVERIFY(out.status() == MsgPackStream::Ok);
+        QVERIFY(pt == pt2);
+    }
+    {
+        QPoint pt(1, 2);
+        QByteArray ba;
+        MsgPackStream out(&ba, QIODevice::WriteOnly);
+        out << pt;
+        QVERIFY(out.status() == MsgPackStream::Ok);
+        QVERIFY(ba.length() == 4);
+
+        MsgPackStream in(ba);
+        QPoint pt2;
+        in >> pt2;
+        QVERIFY(out.status() == MsgPackStream::Ok);
+        QVERIFY(pt == pt2);
+    }
+    {
+        QPoint pt(1234, 5678);
+        QByteArray ba;
+        MsgPackStream out(&ba, QIODevice::WriteOnly);
+        out << pt;
+        QVERIFY(out.status() == MsgPackStream::Ok);
+        QVERIFY(ba.length() == 9);
+
+        MsgPackStream in(ba);
+        QPoint pt2;
+        in >> pt2;
+        QVERIFY(out.status() == MsgPackStream::Ok);
+        QVERIFY(pt == pt2);
+    }
+    {
+        QSize sz;
+        QByteArray ba;
+        MsgPackStream out(&ba, QIODevice::WriteOnly);
+        out << sz;
+        QVERIFY(out.status() == MsgPackStream::Ok);
+        QVERIFY(ba.length() == 3);
+
+        MsgPackStream in(ba);
+        QSize sz2;
+        in >> sz2;
+        QVERIFY(out.status() == MsgPackStream::Ok);
+        QVERIFY(sz == sz2);
+    }
+    {
+        QSize sz(1, 2);
+        QByteArray ba;
+        MsgPackStream out(&ba, QIODevice::WriteOnly);
+        out << sz;
+        QVERIFY(out.status() == MsgPackStream::Ok);
+        QVERIFY(ba.length() == 4);
+
+        MsgPackStream in(ba);
+        QSize sz2;
+        in >> sz2;
+        QVERIFY(out.status() == MsgPackStream::Ok);
+        QVERIFY(sz == sz2);
+    }
+    {
+        QSize sz(1234, 5678);
+        QByteArray ba;
+        MsgPackStream out(&ba, QIODevice::WriteOnly);
+        out << sz;
+        QVERIFY(out.status() == MsgPackStream::Ok);
+        QVERIFY(ba.length() == 9);
+
+        MsgPackStream in(ba);
+        QSize sz2;
+        in >> sz2;
+        QVERIFY(out.status() == MsgPackStream::Ok);
+        QVERIFY(sz == sz2);
+    }
+    {
+        QRect rect;
+        QByteArray ba;
+        MsgPackStream out(&ba, QIODevice::WriteOnly);
+        out << rect;
+        QVERIFY(out.status() == MsgPackStream::Ok);
+        QVERIFY(ba.length() == 3);
+
+        MsgPackStream in(ba);
+        QRect rect2;
+        in >> rect2;
+        QVERIFY(out.status() == MsgPackStream::Ok);
+        QVERIFY(rect == rect2);
+    }
+    {
+        QRect rect(1, 2, 3, 4);
+        QByteArray ba;
+        MsgPackStream out(&ba, QIODevice::WriteOnly);
+        out << rect;
+        QVERIFY(out.status() == MsgPackStream::Ok);
+        QVERIFY(ba.length() == 6);
+
+        MsgPackStream in(ba);
+        QRect rect2;
+        in >> rect2;
+        QVERIFY(out.status() == MsgPackStream::Ok);
+        QVERIFY(rect == rect2);
+    }
+    {
+        QRect rect(0, 0, 65536, 65536);
+        QByteArray ba;
+        MsgPackStream out(&ba, QIODevice::WriteOnly);
+        out << rect;
+        QVERIFY(out.status() == MsgPackStream::Ok);
+        QVERIFY(ba.length() == 15);
+
+        MsgPackStream in(ba);
+        QRect rect2;
+        in >> rect2;
+        QVERIFY(out.status() == MsgPackStream::Ok);
+        QVERIFY(rect == rect2);
+    }
 }
 
 QTEST_APPLESS_MAIN(StreamTest)

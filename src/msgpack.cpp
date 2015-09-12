@@ -38,6 +38,11 @@ bool MsgPack::registerUnpacker(qint8 msgpackType, MsgPack::unpack_user_f unpacke
     return MsgPackPrivate::register_unpacker(msgpackType, unpacker);
 }
 
+qint8 MsgPack::msgpackType(int qType)
+{
+    return MsgPackPrivate::msgpack_type((QMetaType::Type)qType);
+}
+
 bool MsgPack::registerType(QMetaType::Type qType, quint8 msgpackType)
 {
     return MsgPackPrivate::register_qtype(qType, msgpackType);

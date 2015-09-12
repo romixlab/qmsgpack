@@ -40,6 +40,7 @@ public:
     MsgPackStream &operator>>(QString &str);
     MsgPackStream &operator>>(QByteArray &array);
     bool readBytes(char *data, uint len);
+    bool readExtHeader(quint32 &len);
 
     MsgPackStream &operator<<(bool b);
     MsgPackStream &operator<<(quint32 u32);
@@ -52,6 +53,7 @@ public:
     MsgPackStream &operator<<(const char *str);
     MsgPackStream &operator<<(QByteArray array);
     bool writeBytes(const char *data, uint len);
+    bool writeExtHeader(quint32 len, qint8 msgpackType);
 
 private:
     QIODevice *dev;

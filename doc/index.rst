@@ -6,6 +6,8 @@ qmsgpack - MessagePack serializer implementation for Qt
 
    install.rst
    basics.rst
+   stream.rst
+   custom.rst
 
 Contents:
 

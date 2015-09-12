@@ -322,7 +322,47 @@ MsgPackStream &MsgPackStream::operator>>(QByteArray &array)
 bool MsgPackStream::readBytes(char *data, uint len)
 {
     CHECK_STREAM_PRECOND(false);
-    return dev->read(data, len) == len;
+    uint readed = dev->read(data, len);
+    if (readed != len) {
+        setStatus(ReadPastEnd);
+        return false;
+    }
+    return true;
+}
+
+bool MsgPackStream::readExtHeader(quint32 &len)
+{
+    CHECK_STREAM_PRECOND(false);
+    quint8 d[6];
+    if (dev->read((char*)d, 2) != 2) {
+        setStatus(ReadPastEnd);
+        return false;
+    }
+    if (d[0] >= MsgPack::FirstByte::FIXEXT1 &&
+            d[0] <= MsgPack::FirstByte::FIXEX16) {
+        len = 1;
+        len <<= d[0] - MsgPack::FirstByte::FIXEXT1;
+        return true;
+    }
+
+    quint8 toRead = 1;
+    toRead <<= d[0] - MsgPack::FirstByte::EXT8;
+    if (dev->read((char*)&d[2], toRead) != toRead) {
+        setStatus(ReadPastEnd);
+        return false;
+    }
+
+    if (d[0] == MsgPack::FirstByte::EXT8) {
+        len = d[1];
+    } else if (d[0] == MsgPack::FirstByte::EXT16) {
+        len = _msgpack_load16(quint32, &d[1]);
+    } else if (d[0] == MsgPack::FirstByte::EXT32) {
+        len = _msgpack_load32(quint32, &d[1]);
+    } else {
+        setStatus(ReadCorruptData);
+        return false;
+    }
+    return true;
 }
 
 MsgPackStream &MsgPackStream::operator<<(bool b)
@@ -440,8 +480,49 @@ MsgPackStream &MsgPackStream::operator<<(QByteArray array)
 bool MsgPackStream::writeBytes(const char *data, uint len)
 {
     CHECK_STREAM_WRITE_PRECOND(false);
-    if (dev->write(data, len) != len)
+    if (dev->write(data, len) != len) {
         setStatus(WriteFailed);
+        return false;
+    }
+    return true;
+}
+
+bool MsgPackStream::writeExtHeader(quint32 len, qint8 msgpackType)
+{
+    CHECK_STREAM_WRITE_PRECOND(false);
+    quint8 d[6];
+    d[1] = msgpackType;
+    quint8 sz = 2;
+    if (len == 1) {
+        d[0] = 0xd4;
+    } else if (len == 2) {
+        d[0] = 0xd5;
+    } else if (len == 4) {
+        d[0] = 0xd6;
+    } else if (len == 8) {
+        d[0] = 0xd7;
+    } else if (len == 16) {
+        d[0] = 0xd8;
+    } else if (len <= std::numeric_limits<quint8>::max()) {
+        d[0] = 0xc7;
+        d[1] = (quint8)len;
+        d[2] = msgpackType;
+        sz = 3;
+    } else if (len <= std::numeric_limits<quint16>::max()) {
+        d[0] = 0xc8;
+        _msgpack_store16(&d[1], len);
+        d[3] = msgpackType;
+        sz = 4;
+    } else {
+        d[0] = 0xc9;
+        _msgpack_store32(&d[1], len);
+        d[5] = msgpackType;
+        sz = 6;
+    }
+    if (dev->write((const char *)d, sz) != sz) {
+        setStatus(WriteFailed);
+        return false;
+    }
     return true;
 }
 

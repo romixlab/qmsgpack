@@ -1,5 +1,6 @@
-set(qmsgpack_srcs msgpack.cpp msgpackcommon.cpp msgpackstream.cpp private/pack_p.cpp private/unpack_p.cpp private/qt_types_p.cpp)
+set(qmsgpack_srcs msgpack.cpp msgpackcommon.cpp msgpackstream.cpp private/pack_p.cpp private/unpack_p.cpp private/qt_types_p.cpp stream/time.cpp stream/geometry.cpp)
 set(qmsgpack_headers msgpack.h msgpackstream.h msgpackcommon.h msgpack_export.h endianhelper.h)
+set(qmsgpack_stream_headers stream/location.h stream/time.h stream/geometry.h)
 
 add_library(qmsgpack SHARED ${qmsgpack_srcs} ${qmsgpack_headers})
 
@@ -32,3 +33,6 @@ install(TARGETS qmsgpack EXPORT qmsgpack-export
 	RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
 	ARCHIVE DESTINATION ${LIB_INSTALL_DIR}
 	PUBLIC_HEADER DESTINATION ${INCLUDE_INSTALL_DIR}/qmsgpack)
+
+
+install(FILES  ${qmsgpack_stream_headers} DESTINATION ${INCLUDE_INSTALL_DIR}/qmsgpack/stream)

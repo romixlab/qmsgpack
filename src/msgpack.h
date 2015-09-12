@@ -14,6 +14,7 @@ namespace MsgPack
 
     MSGPACK_EXPORT QByteArray pack(const QVariant &variant);
     MSGPACK_EXPORT bool registerPacker(QMetaType::Type qType, qint8 msgpackType, pack_user_f packer);
+    MSGPACK_EXPORT qint8 msgpackType(int qType);
 
     MSGPACK_EXPORT bool registerType(QMetaType::Type qType, quint8 msgpackType);
 

@@ -1,5 +1,4 @@
-QT       += core
-QT       -= gui
+QT       += core gui location
 
 TARGET = qmsgpack
 CONFIG   -= app_bundle
@@ -20,7 +19,10 @@ SOURCES += msgpack.cpp \
     private/pack_p.cpp \
     private/unpack_p.cpp \
     private/qt_types_p.cpp \
-    msgpackstream.cpp
+    msgpackstream.cpp \
+    stream/time.cpp \
+    stream/geometry.cpp \
+    stream/location.cpp
 
 HEADERS += \
     msgpack.h \
@@ -30,7 +32,10 @@ HEADERS += \
     msgpackcommon.h \
     msgpack_export.h \
     private/qt_types_p.h \
-    msgpackstream.h
+    msgpackstream.h \
+    stream/location.h \
+    stream/time.h \
+    stream/geometry.h
 
 HEADERS_INSTALL = \
     msgpack.h \
@@ -40,7 +45,8 @@ HEADERS_INSTALL = \
     msgpackstream.h \
 
 STREAM_HEADERS_INSTALL = \
-    stream/location.h
+    stream/location.h \
+    stream/time.h
 
 unix {
     header_files.files = $$HEADERS_INSTALL

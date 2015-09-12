@@ -13,6 +13,11 @@ QByteArray pack_qcolor(const QVariant &variant);
 QVariant unpack_qcolor(const QByteArray &data);
 #endif //QT_GUI_LIB
 
+#ifdef QT_LOCATION_LIB
+QByteArray pack_qgeocoordinate(const QVariant &variant);
+QVariant unpack_qgeocoordinate(const QByteArray &data);
+#endif
+
 // Date and Time
 /**
  * @brief pack_qtime_raw internal: packs QTime to 4 or 2 bytes (with or without ms)
@@ -20,14 +25,12 @@ QVariant unpack_qcolor(const QByteArray &data);
  * @param p pointer to preallocated array
  * format: (bits) hhhhmmmm mmssssss [------ms msmsmsms]
  */
-void pack_qtime_raw(const QTime &time, quint8 *p); // return 2 - without ms, 4 with ms
 /**
  * @brief unpack_qtime_raw internal: unpack 2 or 4 bytes to QTime
  * @param p data to unpack
  * @param with_ms true if array is 4 bytes (i.e. unpack with ms)
  * @return QTime
  */
-QTime unpack_qtime_raw(quint8 *p, bool with_ms);
 QByteArray pack_qtime(const QVariant &variant);
 QVariant unpack_qtime(const QByteArray &data);
 
@@ -37,9 +40,7 @@ QVariant unpack_qtime(const QByteArray &data);
  * @param p pointer to preallocated array
  * format: (bits) d(5th bit)xyyyyyyyyyyyyyy, mmmmdddd
  */
-void pack_qdate_raw(const QDate &date, quint8 *p);
-/// @brief internal: unpack bytes to QDate
-QDate unpack_qdate_raw(quint8 *p);
+
 QByteArray pack_qdate(const QVariant &variant);
 QVariant unpack_qdate(const QByteArray &data);
 
