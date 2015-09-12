@@ -216,7 +216,7 @@ void PackTest::test_float()
 
 void PackTest::test_str()
 {
-    QString str = QStringLiteral("msgpack rocks");
+    QString str = "msgpack rocks";
     QByteArray arr = MsgPack::pack(str);
     QVERIFY(arr.size() == 14);
     quint8 *p = (quint8 *)arr.data();
