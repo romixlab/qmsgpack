@@ -138,4 +138,4 @@ In this case size of data is known id advance, if this is not the case, then you
 
 .. tip::
 
-    Of course you can just stream out everything without any ext header and user type id's, like this: ``s << point.x() << point.y();`` but in that case you will not be able to unpack anything useful with MsgPack::unpack() or in other MsgPack implementations.
+    Of course you can just stream out everything without any ext header and user type id's, like this: ``s << point.x() << point.y(); return s;`` but in that case you will not be able to unpack anything useful with MsgPack::unpack() or in other MsgPack implementations.

@@ -95,10 +95,10 @@ MsgPackStream &MsgPackStream::operator>>(bool &b)
         b = false;
         setStatus(ReadPastEnd);
     } else {
-        if (p[0] != MsgPack::FirstByte::TRUE ||
-            p[0] != MsgPack::FirstByte::FALSE)
+        if (p[0] != MsgPack::FirstByte::MTRUE ||
+            p[0] != MsgPack::FirstByte::MFALSE)
             setStatus(ReadCorruptData);
-        b = (p[0] == MsgPack::FirstByte::TRUE);
+        b = (p[0] == MsgPack::FirstByte::MTRUE);
     }
     return *this;
 }
@@ -369,7 +369,7 @@ MsgPackStream &MsgPackStream::operator<<(bool b)
 {
     CHECK_STREAM_WRITE_PRECOND(*this);
     quint8 m = b == true ?
-                MsgPack::FirstByte::TRUE : MsgPack::FirstByte::FALSE;
+                MsgPack::FirstByte::MTRUE : MsgPack::FirstByte::MFALSE;
     if (dev->write((char *)&m, 1) != 1)
         setStatus(WriteFailed);
     return *this;
