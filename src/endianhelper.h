@@ -19,6 +19,10 @@
 #define MSGPACK_SYSDEP_H__
 #include <qglobal.h>
 
+#if defined(_WIN32) && defined(_MSC_VER) && _MSC_VER >= 1600
+#include <stdint.h>
+#endif
+
 #ifndef _WIN32
 #include <arpa/inet.h>  /* __BYTE_ORDER */
 #endif
