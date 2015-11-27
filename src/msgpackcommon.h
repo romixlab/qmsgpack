@@ -8,6 +8,8 @@
 #include <stdint.h>
 #endif
 
+#include "msgpack_export.h"
+
 #define MSGPACK_MAJOR 0
 #define MSGPACK_MINOR 1
 #define MSGPACK_VERSION 0
@@ -28,7 +30,7 @@ typedef QVariant (*unpack_user_f)(const QByteArray &data);
  * @brief version
  * @return current version
  */
-QString version();
+MSGPACK_EXPORT QString version();
 /**
  * @brief The FirstByte enum
  * From Message Pack spec
