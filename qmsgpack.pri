@@ -1,5 +1,7 @@
 QT       += core location
 
+DEFINES += MSGPACK_MAKE_LIB
+
 INCLUDEPATH += $$PWD/src
 
 SOURCES += \
