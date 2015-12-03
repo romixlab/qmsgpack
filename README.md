@@ -5,7 +5,7 @@ MessagePack for Qt
 
 Documentation
 -------------
-Complete documentation is available here: [mp.marsw.ru](http://msgpack.marsworks.ru/) (still working on it)
+Complete documentation is available here: [msgpack.marsworks.ru](http://msgpack.marsworks.ru/) (still working on it)
 
 Installation
 ------------

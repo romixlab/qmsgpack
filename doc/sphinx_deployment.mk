@@ -59,15 +59,15 @@ endif
 ## -- Rsync Deploy config -- ##
 # Be sure your public key is listed in your server's ~/.ssh/authorized_keys file
 ifndef SSH_USER
-SSH_USER       = roman@vds.marsworks.ru
+SSH_USER       = nginx@mars
 endif
 
 ifndef SSH_PORT
-SSH_PORT       = 22
+SSH_PORT       = 7722
 endif
 
 ifndef DOCUMENT_ROOT
-DOCUMENT_ROOT  = /var/www/roman/data/www/msgpack.marsworks.ru/
+DOCUMENT_ROOT  = /var/www/msgpack.marsworks.ru/
 endif
 
 #If you choose to delete on sync, rsync will create a 1:1 match
