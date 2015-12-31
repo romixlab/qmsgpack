@@ -87,6 +87,7 @@ quint8 * MsgPackPrivate::unpack_nil(QVariant &v, quint8 *p)
 {
     Q_UNUSED(p)
     Q_UNUSED(v)
+    v = QVariant();
     return p + 1;
 }
 
@@ -94,6 +95,7 @@ quint8 * MsgPackPrivate::unpack_never_used(QVariant &v, quint8 *p)
 {
     Q_UNUSED(p)
     Q_UNUSED(v)
+    v = QVariant();
     return p + 1;
 }
 

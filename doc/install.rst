@@ -62,6 +62,18 @@ Add options before ``..`` as follow:
 
     cmake -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_TESTS=True ..
 
+Custom Qt installation
+""""""""""""""""""""""
+
+If you installed Qt with online installer, cmake will most likely not find it, in this case try adding following lines to CMakeLists.txt:
+
+.. code-block:: cmake
+
+    set(Qt5Core_DIR "/opt/Qt5.6.0/5.6/gcc_64/lib/cmake/Qt5Core")
+    set(Qt5Test_DIR "/opt/Qt5.6.0/5.6/gcc_64/lib/cmake/Qt5Test")
+    set(Qt5_DIR "/opt/Qt5.6.0/5.6/gcc_64/lib/cmake/Qt5Core")
+    set(QT_QMAKE_EXECUTABLE "/opt/Qt5.6.0/5.6/gcc_64/bin/qmake")
+
 qmake
 ^^^^^
 

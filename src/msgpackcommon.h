@@ -4,10 +4,6 @@
 #include <QVariant>
 #include <QtGlobal>
 
-#ifdef Q_OS_WINRT
-#include <stdint.h>
-#endif
-
 #define MSGPACK_MAJOR 0
 #define MSGPACK_MINOR 1
 #define MSGPACK_VERSION 0
