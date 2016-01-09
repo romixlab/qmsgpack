@@ -4,7 +4,6 @@ compiler:
  - gcc
 
 env:
- - QT4_BUILD=ON
  - QT4_BUILD=OFF
 
 before_install:
