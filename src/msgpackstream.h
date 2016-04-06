@@ -1,6 +1,7 @@
 #ifndef STREAM_H
 #define STREAM_H
 
+#include "msgpack_export.h"
 #include "msgpackcommon.h"
 #include "endianhelper.h"
 
@@ -8,7 +9,7 @@
 
 #include <QIODevice>
 
-class MsgPackStream
+class MSGPACK_EXPORT MsgPackStream
 {
 public:
     MsgPackStream();
