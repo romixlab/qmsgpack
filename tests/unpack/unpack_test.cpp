@@ -15,6 +15,7 @@ private Q_SLOTS:
     void test_strings();
     void test_binary();
     void test_array();
+    void test_map();
 };
 
 
@@ -53,6 +54,18 @@ void UnpackTest::test_integers()
     QVERIFY(l[17].toULongLong() == std::numeric_limits<quint64>::max());
     QVERIFY(l[18].toLongLong() == -2147483649);
     QVERIFY(l[19].toLongLong() == std::numeric_limits<qint64>::min());
+
+    QByteArray pack = MsgPack::pack((qint64)1111111111);
+    qint64 u = MsgPack::unpack(pack).toLongLong();
+    QVERIFY(u == 1111111111);
+
+    pack = MsgPack::pack((qint64)-3333333333);
+    u = MsgPack::unpack(pack).toLongLong();
+    QVERIFY(u == -3333333333);
+
+    pack = MsgPack::pack((qint64)3333333333);
+    u = MsgPack::unpack(pack).toLongLong();
+    QVERIFY(u == 3333333333);
 }
 
 void UnpackTest::test_floats()
@@ -138,6 +151,44 @@ void UnpackTest::test_array()
     QVERIFY(lu.size() == 65536);
     for (int i = 0; i < 65536; ++i)
         QVERIFY(lu[i] == i);
+}
+
+void UnpackTest::test_map()
+{
+    QVariantMap m;
+    QVariantMap unpacked_m;
+
+    qint64 ll = 339625541;
+    m["ll"] = ll;
+
+    unpacked_m = MsgPack::unpack(MsgPack::pack(m)).toMap();
+    qDebug() << m << "<=>" << unpacked_m;
+    QVERIFY(m == unpacked_m);
+
+    m.clear();
+    ll = 3333642741;
+    m["ll"] = ll;
+
+    QByteArray packArray = MsgPack::pack(m);
+    unpacked_m = MsgPack::unpack(packArray).toMap();
+    qDebug() << m << "<=>" << unpacked_m;
+    QVERIFY(m == unpacked_m);
+
+    m.clear();
+    ll = 33336427413;
+    m["ll"] = ll;
+
+    unpacked_m = MsgPack::unpack(MsgPack::pack(m)).toMap();
+    qDebug() << m << "<=>" << unpacked_m;
+    QVERIFY(m == unpacked_m);
+
+    m.clear();
+    ll = 932838457459459;
+    m["ll"] = ll;
+
+    unpacked_m = MsgPack::unpack(MsgPack::pack(m)).toMap();
+    qDebug() << m << "<=>" << unpacked_m;
+    QVERIFY(m == unpacked_m);
 }
 
 QTEST_APPLESS_MAIN(UnpackTest)
