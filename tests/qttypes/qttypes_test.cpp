@@ -68,6 +68,7 @@ void QtTypesTest::test_qtime()
     QByteArray packed = MsgPack::pack(t);
     QTime t2 = MsgPack::unpack(packed).toTime();
     QVERIFY(t == t2);
+    qDebug() << packed.toHex();
     QVERIFY(packed.size() == 3);
 
     t = QTime(12, 01, 01, 0);
