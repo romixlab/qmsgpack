@@ -123,9 +123,11 @@ quint8 *MsgPackPrivate::pack_uint(quint32 i, quint8 *p, bool wr)
 
 quint8 *MsgPackPrivate::pack_longlong(qint64 i, quint8 *p, bool wr)
 {
-    if (i >= std::numeric_limits<qint32>::min()
-            && i <= std::numeric_limits<quint32>::max())
-        return p = pack_int(i, p, wr);
+    if (i >= 0 && i <= std::numeric_limits<quint32>::max())
+        return pack_uint(i, p, wr);
+    else if (i >= std::numeric_limits<qint32>::min()
+            && i <= std::numeric_limits<qint32>::max())
+        return pack_int(i, p, wr);
     if (wr) *p = 0xd3;
     p++;
     if (wr) _msgpack_store64(p, i);
