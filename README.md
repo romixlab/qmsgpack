@@ -1,11 +1,23 @@
-qmsgpack [![Build Status](https://travis-ci.org/romixlab/qmsgpack.svg?branch=master)](https://travis-ci.org/romixlab/qmsgpack)
+qmsgpack
 ========
-
 MessagePack for Qt
+
+<p align="center">
+    <a href="https://travis-ci.org/romixlab/qmsgpack">
+        <img src="https://travis-ci.org/romixlab/qmsgpack.svg?branch=master"
+             alt="Build Status">
+    </a>
+    <a href="http://qmsgpack.readthedocs.org">
+        <img src="https://readthedocs.org/projects/qmsgpack/badge/?version=latest"
+             alt="Doc Status">
+    </a>
+</p>
+
+
 
 Documentation
 -------------
-Complete documentation is available here: [msgpack.marsworks.ru](http://msgpack.marsworks.ru/) (still working on it)
+Complete documentation is available here: [qmsgpack.readthedocs.org](http://qmsgpack.readthedocs.org/)
 
 Installation
 ------------
