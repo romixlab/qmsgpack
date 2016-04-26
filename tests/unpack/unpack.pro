@@ -13,7 +13,7 @@ CONFIG   += console
 CONFIG   -= app_bundle
 
 TEMPLATE = app
-LIBS += -lqmsgpack
+include($$PWD/../../qmsgpack.pri)
 INCLUDEPATH += ../../src
 
 
