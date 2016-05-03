@@ -7,7 +7,7 @@ MessagePack for Qt
         <img src="https://travis-ci.org/romixlab/qmsgpack.svg?branch=master"
              alt="Build Status">
     </a>
-    <a href="http://qmsgpack.readthedocs.org">
+    <a href="http://qmsgpack.readthedocs.io/en/latest/">
         <img src="https://readthedocs.org/projects/qmsgpack/badge/?version=latest"
              alt="Doc Status">
     </a>
@@ -17,7 +17,7 @@ MessagePack for Qt
 
 Documentation
 -------------
-Complete documentation is available here: [qmsgpack.readthedocs.org](http://qmsgpack.readthedocs.org/)
+Complete documentation is available here: [qmsgpack.readthedocs.io](http://qmsgpack.readthedocs.io/en/latest/)
 
 Installation
 ------------
