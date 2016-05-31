@@ -11,7 +11,7 @@
 #include <QReadLocker>
 #include <QWriteLocker>
 
-QHash<QMetaType::Type, MsgPackPrivate::packer_t> MsgPackPrivate::user_packers;
+QHash<int, MsgPackPrivate::packer_t> MsgPackPrivate::user_packers;
 bool MsgPackPrivate::compatibilityMode = false;
 QReadWriteLock MsgPackPrivate::packers_lock;
 
@@ -319,7 +319,7 @@ quint8 *MsgPackPrivate::pack_map(const QVariantMap &map, quint8 *p, bool wr, QVe
     return p;
 }
 
-bool MsgPackPrivate::register_packer(QMetaType::Type q_type, qint8 msgpack_type, MsgPack::pack_user_f packer)
+bool MsgPackPrivate::register_packer(int q_type, qint8 msgpack_type, MsgPack::pack_user_f packer)
 {
     QWriteLocker locker(&packers_lock);
     if (user_packers.contains(q_type)) {
