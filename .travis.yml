@@ -8,15 +8,15 @@ env:
  - QT4_BUILD=OFF
 
 before_install:
- - sudo add-apt-repository --yes ppa:ubuntu-toolchain-r/test
- - sudo add-apt-repository --yes ppa:ubuntu-sdk-team/ppa
- - sudo add-apt-repository --yes ppa:kalakris/cmake
- - sudo apt-get update -qq
+    - sudo add-apt-repository --yes ppa:ubuntu-toolchain-r/test
+    - sudo add-apt-repository --yes ppa:ubuntu-sdk-team/ppa
+    - sudo add-apt-repository --yes ppa:kalakris/cmake
+    - sudo apt-get update -qq
 
- install:
- - sudo apt-get install -y --force-yes build-essential g++-4.8 -y
- - sudo apt-get install -y --force-yes cmake
- - sudo apt-get install -y --force-yes qtbase5-dev qtdeclarative5-dev libqt5gui5 qttools5-dev-tools qttools5-dev qtmultimedia5-dev libmsgpack-dev
+install:
+   - sudo apt-get install -y --force-yes build-essential g++-4.8 -y
+   - sudo apt-get install -y --force-yes cmake
+   - sudo apt-get install -y --force-yes qtbase5-dev qtdeclarative5-dev libqt5gui5 qttools5-dev-tools qttools5-dev qtmultimedia5-dev libmsgpack-dev
 
 script:
     - qmake -qt=qt5 qmsgpack.pro
