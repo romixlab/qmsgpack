@@ -14,7 +14,7 @@ before_install:
 
 install:
    - sudo apt-get install -y --force-yes build-essential g++-4.8 -y
-   - sudo apt-get install -y --force-yes qtbase5-dev qtdeclarative5-dev libqt5gui5 qttools5-dev-tools qttools5-dev qtmultimedia5-dev libmsgpack-dev
+   - sudo apt-get install -y --force-yes qtbase5-dev qtdeclarative5-dev libqt5gui5 qttools5-dev-tools qttools5-dev qtmultimedia5-dev libqt5location5 qtlocation5-dev libmsgpack-dev
 
 script:
     - qmake -qt=qt5 qmsgpack.pro
