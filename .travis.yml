@@ -1,21 +1,23 @@
 language: cpp
+compiler: gcc
 
-compiler:
- - gcc
+dist: trusty
+sudo: required
 
 env:
  - QT4_BUILD=OFF
 
 before_install:
+ - sudo add-apt-repository --yes ppa:ubuntu-toolchain-r/test
  - sudo add-apt-repository --yes ppa:ubuntu-sdk-team/ppa
  - sudo add-apt-repository --yes ppa:kalakris/cmake
  - sudo apt-get update -qq
- - sudo apt-get install -qq cmake libqtcore4 qt4-qmake libqt5core5 qt5-qmake qt5-default qtchooser libmsgpack-dev
+
+ install:
+ - sudo apt-get install -y --force-yes build-essential g++-4.8 -y
+ - sudo apt-get install -y --force-yes cmake
+ - sudo apt-get install -y --force-yes qtbase5-dev qtdeclarative5-dev libqt5gui5 qttools5-dev-tools qttools5-dev qtmultimedia5-dev libmsgpack-dev
 
 script:
- - mkdir build
- - cd build
- - if [ "$QT4_BUILD" == "OFF" ]; then cmake -DBUILD_TESTS=TRUE -DQT4_BUILD=FALSE ..; else cmake -DBUILD_TESTS=TRUE -DQT4_BUILD=TRUE ..; fi
- - make
- - export CTEST_OUTPUT_ON_FAILURE=1
- - make test
+    - qmake -qt=qt5 qmsgpack.pro
+    - make
