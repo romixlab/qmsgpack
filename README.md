@@ -1,23 +1,10 @@
 qmsgpack
 ========
+[![Build status](https://travis-ci.org/pixraider/qmsgpack.svg?branch=master)](https://travis-ci.org/pixraider/qmsgpack)
+[![Doc Status](https://readthedocs.org/projects/qmsgpack/badge/?version=latest)](http://qmsgpack.readthedocs.org)
+
 MessagePack for Qt
 
-<p align="center">
-    <a href="https://travis-ci.org/pixraider/qmsgpack">
-        <img src="https://travis-ci.org/pixraider/qmsgpack.svg?branch=master"
-             alt="Build Status">
-    </a>
-    <a href="http://qmsgpack.readthedocs.org">
-        <img src="https://readthedocs.org/projects/qmsgpack/badge/?version=latest"
-             alt="Doc Status">
-    </a>
-</p>
-
-
-
-Documentation
--------------
-Complete documentation is available here: [qmsgpack.readthedocs.org](http://qmsgpack.readthedocs.org/)
 
 Installation
 ------------
