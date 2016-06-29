@@ -3,8 +3,8 @@ qmsgpack
 MessagePack for Qt
 
 <p align="center">
-    <a href="https://travis-ci.org/romixlab/qmsgpack">
-        <img src="https://travis-ci.org/romixlab/qmsgpack.svg?branch=master"
+    <a href="https://travis-ci.org/pixraider/qmsgpack">
+        <img src="https://travis-ci.org/pixraider/qmsgpack.svg?branch=master"
              alt="Build Status">
     </a>
     <a href="http://qmsgpack.readthedocs.org">
