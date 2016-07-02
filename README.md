@@ -1,6 +1,6 @@
 qmsgpack
 ========
-[![Build status](https://travis-ci.org/pixraider/qmsgpack.svg?branch=master)](https://travis-ci.org/pixraider/qmsgpack)
+[![Build status](https://travis-ci.org/buseySmile/qmsgpack.svg?branch=master)](https://travis-ci.org/buseySmile/qmsgpack)
 [![Doc Status](https://readthedocs.org/projects/qmsgpack/badge/?version=latest)](http://qmsgpack.readthedocs.org)
 
 MessagePack for Qt
