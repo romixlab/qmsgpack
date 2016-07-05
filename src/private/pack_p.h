@@ -19,9 +19,9 @@ typedef struct {
     MsgPack::pack_user_f packer;
     qint8 type;
 } packer_t;
-bool register_packer(QMetaType::Type q_type, qint8 msgpack_type, MsgPack::pack_user_f packer);
+bool register_packer(int q_type, qint8 msgpack_type, MsgPack::pack_user_f packer);
 qint8 msgpack_type(QMetaType::Type q_type);
-extern QHash<QMetaType::Type, packer_t> user_packers;
+extern QHash<int, packer_t> user_packers;
 extern QReadWriteLock packers_lock;
 extern bool compatibilityMode;
 
