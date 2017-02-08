@@ -91,7 +91,7 @@ MsgPackStream &MsgPackStream::operator>>(bool &b)
 {
     CHECK_STREAM_PRECOND(*this)
     quint8 p[1];
-    if (!dev->getChar((char *)p)) {
+    if (!readBytes((char *)p, 1)) {
         b = false;
         setStatus(ReadPastEnd);
     } else {
@@ -197,7 +197,7 @@ MsgPackStream &MsgPackStream::operator>>(float &f)
     CHECK_STREAM_PRECOND(*this);
     quint8 *fp = (quint8 *)&f;
     quint8 p[5];
-    if (dev->read((char *)p, 1) != 1) {
+    if (!readBytes((char *)p, 1)) {
         setStatus(ReadPastEnd);
         return *this;
     }
@@ -205,7 +205,7 @@ MsgPackStream &MsgPackStream::operator>>(float &f)
         setStatus(ReadCorruptData);
         return *this;
     }
-    if (dev->read((char *)p + 1, 4) != 4) {
+    if (!readBytes((char *)p + 1, 4)) {
         setStatus(ReadPastEnd);
         return *this;
     }
@@ -224,7 +224,7 @@ MsgPackStream &MsgPackStream::operator>>(double &d)
     CHECK_STREAM_PRECOND(*this);
     quint8 *fp = (quint8 *)&d;
     quint8 p[9];
-    if (dev->read((char *)p, 1) != 1) {
+    if (!readBytes((char *)p, 1)) {
         setStatus(ReadPastEnd);
         return *this;
     }
@@ -232,7 +232,7 @@ MsgPackStream &MsgPackStream::operator>>(double &d)
         setStatus(ReadCorruptData);
         return *this;
     }
-    if (dev->read((char *)p + 1, 8) != 8) {
+    if (!readBytes((char *)p + 1, 8)) {
         setStatus(ReadPastEnd);
         return *this;
     }
@@ -250,7 +250,7 @@ MsgPackStream &MsgPackStream::operator>>(QString &str)
 {
     CHECK_STREAM_PRECOND(*this);
     quint8 p[5];
-    if (dev->read((char *)p, 1) != 1) {
+    if (!readBytes((char *)p, 1)) {
         setStatus(ReadPastEnd);
         return *this;
     }
@@ -259,20 +259,20 @@ MsgPackStream &MsgPackStream::operator>>(QString &str)
     if (*p >= 0xa0 && *p <= 0xbf) { // fixstr
         len = (*p) & 0x1f; // 0b00011111
     } else if (*p == MsgPack::FirstByte::STR8) {
-        if (dev->read((char *)p + 1, 1) == 1)
+        if (readBytes((char *)p + 1, 1))
             len = p[1];
     } else if (*p == MsgPack::FirstByte::STR16) {
-        if (dev->read((char *)p + 1, 2) == 2)
+        if (readBytes((char *)p + 1, 2))
             len = _msgpack_load16(int, &p[1]);
     } else if (*p == MsgPack::FirstByte::STR32) {
-        if (dev->read((char *)p + 1, 4) == 4)
+        if (readBytes((char *)p + 1, 4))
             len = _msgpack_load32(int, &p[1]);
     } else {
         setStatus(ReadCorruptData);
         return *this;
     }
     quint8 *data = new quint8[len];
-    if (dev->read((char *)data, len) != len) {
+    if (!readBytes((char *)data, len)) {
         setStatus(ReadPastEnd);
         delete[] data;
         return *this;
@@ -286,25 +286,25 @@ MsgPackStream &MsgPackStream::operator>>(QByteArray &array)
 {
     CHECK_STREAM_PRECOND(*this);
     quint8 p[5];
-    if (dev->read((char *)p, 1) != 1) {
+    if (!readBytes((char *)p, 1)) {
         setStatus(ReadPastEnd);
         return *this;
     }
     quint32 len;
     if (p[0] == MsgPack::FirstByte::BIN8) {
-        if (dev->read((char *)p + 1, 1) != 1) {
+        if (!readBytes((char *)p + 1, 1)) {
             setStatus(ReadPastEnd);
             return *this;
         }
         len = p[1];
     } else if (p[0] == MsgPack::FirstByte::BIN16) {
-        if (dev->read((char *)p + 1, 2) != 2) {
+        if (!readBytes((char *)p + 1, 2)) {
             setStatus(ReadPastEnd);
             return *this;
         }
         len = _msgpack_load16(quint16, &p[1]);
     } else if (p[0] == MsgPack::FirstByte::BIN32) {
-        if (dev->read((char *)p + 1, 4) != 4) {
+        if (!readBytes((char *)p + 1, 4)) {
             setStatus(ReadPastEnd);
             return *this;
         }
@@ -314,7 +314,7 @@ MsgPackStream &MsgPackStream::operator>>(QByteArray &array)
         return *this;
     }
     array.resize(len);
-    if (dev->read(array.data(), len) != len)
+    if (!readBytes(array.data(), len))
         setStatus(ReadPastEnd);
     return *this;
 }
@@ -322,8 +322,23 @@ MsgPackStream &MsgPackStream::operator>>(QByteArray &array)
 bool MsgPackStream::readBytes(char *data, uint len)
 {
     CHECK_STREAM_PRECOND(false);
-    uint readed = dev->read(data, len);
-    if (readed != len) {
+    uint readed = 0;
+    uint thisRead = 0;
+    while (readed < len)
+    {
+        thisRead = dev->read(data, (len - readed));
+        if (thisRead < 0)
+            break;
+        /* Advance the read pointer */
+        data += thisRead;
+        readed += thisRead;
+        /* Data might not be available for a bit, so wait before reading again. */
+        if (readed < len) {
+            dev->waitForReadyRead(-1);
+        }
+    }
+    if (thisRead < 0) {
+        /* FIXME: There are actual errors that can happen here. */
         setStatus(ReadPastEnd);
         return false;
     }
@@ -334,7 +349,7 @@ bool MsgPackStream::readExtHeader(quint32 &len)
 {
     CHECK_STREAM_PRECOND(false);
     quint8 d[6];
-    if (dev->read((char*)d, 2) != 2) {
+    if (!readBytes((char*)d, 2)) {
         setStatus(ReadPastEnd);
         return false;
     }
@@ -347,7 +362,7 @@ bool MsgPackStream::readExtHeader(quint32 &len)
 
     quint8 toRead = 1;
     toRead <<= d[0] - MsgPack::FirstByte::EXT8;
-    if (dev->read((char*)&d[2], toRead) != toRead) {
+    if (!readBytes((char*)&d[2], toRead)) {
         setStatus(ReadPastEnd);
         return false;
     }
@@ -529,7 +544,7 @@ bool MsgPackStream::writeExtHeader(quint32 len, qint8 msgpackType)
 bool MsgPackStream::unpack_longlong(qint64 &i64)
 {
     quint8 p[9];
-    if (dev->read((char *)p, 1) != 1) {
+    if (!readBytes((char *)p, 1)) {
         setStatus(ReadPastEnd);
         return false;
     }
@@ -544,7 +559,7 @@ bool MsgPackStream::unpack_longlong(qint64 &i64)
 
     static int typeLengths[] = {1, 2, 4, 8, 1, 2, 4, 8};
     int typeLength = typeLengths[p[0] - MsgPack::FirstByte::UINT8];
-    if (dev->read((char *)p + 1, typeLength) != typeLength) {
+    if (!readBytes((char *)p + 1, typeLength)) {
         setStatus(ReadPastEnd);
         return false;
     }
@@ -577,7 +592,7 @@ bool MsgPackStream::unpack_longlong(qint64 &i64)
 bool MsgPackStream::unpack_ulonglong(quint64 &u64)
 {
     quint8 p[9];
-    if (dev->read((char *)p, 1) != 1) {
+    if (!readBytes((char *)p, 1)) {
         setStatus(ReadPastEnd);
         return false;
     }
@@ -591,7 +606,7 @@ bool MsgPackStream::unpack_ulonglong(quint64 &u64)
 
     static int typeLengths[] = {1, 2, 4, 8, 1, 2, 4, 8};
     int typeLength = typeLengths[p[0] - MsgPack::FirstByte::UINT8];
-    if (dev->read((char *)p + 1, typeLength) != typeLength) {
+    if (!readBytes((char *)p + 1, typeLength)) {
         setStatus(ReadPastEnd);
         return false;
     }
@@ -602,8 +617,8 @@ bool MsgPackStream::unpack_ulonglong(quint64 &u64)
         u64 = _msgpack_load16(quint64, p + 1);
         return true;
     } else if (p[0] == MsgPack::FirstByte::UINT32) {
-        u64 = _msgpack_load32(quint64, p + 1); 
-        return true;       
+        u64 = _msgpack_load32(quint64, p + 1);
+        return true;
     } else if (p[0] == MsgPack::FirstByte::UINT64) {
         u64 = _msgpack_load64(quint64, p + 1);
         return true;
