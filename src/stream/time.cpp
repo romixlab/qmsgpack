@@ -79,7 +79,7 @@ MsgPackStream& operator>>(MsgPackStream& s, QTime &t)
         return s;
     }
     if (len == 1) {
-        t == QTime();
+        t = QTime();
         return s;
     }
     quint8 p[4];
