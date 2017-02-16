@@ -1,4 +1,4 @@
-QT       += core location
+QT       += core
 
 DEFINES += MSGPACK_MAKE_LIB
 
@@ -12,8 +12,7 @@ SOURCES += \
     $$PWD/src/private/qt_types_p.cpp \
     $$PWD/src/msgpackstream.cpp \
     $$PWD/src/stream/time.cpp \
-    $$PWD/src/stream/geometry.cpp \
-    $$PWD/src/stream/location.cpp
+    $$PWD/src/stream/geometry.cpp
 
 HEADERS += \
     $$PWD/src/msgpack.h \
@@ -24,6 +23,12 @@ HEADERS += \
     $$PWD/src/msgpack_export.h \
     $$PWD/src/private/qt_types_p.h \
     $$PWD/src/msgpackstream.h \
-    $$PWD/src/stream/location.h \
     $$PWD/src/stream/time.h \
     $$PWD/src/stream/geometry.h
+
+qtHaveModule(location) {
+    QT += location
+
+    SOURCES += $$PWD/src/stream/location.cpp
+    HEADERS += $$PWD/src/stream/location.h
+}
