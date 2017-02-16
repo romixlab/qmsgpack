@@ -28,7 +28,7 @@ MsgPackStream::MsgPackStream() :
 { }
 
 MsgPackStream::MsgPackStream(QIODevice *d) :
-    dev(d), owndev(false)
+    dev(d), owndev(false), q_status(Ok)
 { }
 
 MsgPackStream::MsgPackStream(QByteArray *a, QIODevice::OpenMode mode) :
