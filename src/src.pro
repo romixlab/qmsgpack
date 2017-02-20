@@ -45,7 +45,7 @@ HEADERS_INSTALL = \
 STREAM_HEADERS_INSTALL = \
     stream/time.h
 
-location {
+qtHaveModule(location) {
     QT += location
 
     SOURCES += stream/location.cpp
