@@ -26,6 +26,8 @@ public:
     Status status() const;
     void resetStatus();
     void setStatus(Status status);
+    void setFlushWrites(bool flushWrites);
+    bool willFlushWrites();
 
     MsgPackStream &operator>>(bool &b);
     MsgPackStream &operator>>(quint8 &u8);
@@ -60,6 +62,7 @@ private:
     QIODevice *dev;
     bool owndev;
     Status q_status;
+    bool flushWrites;
 
     bool unpack_longlong(qint64 &i64);
     bool unpack_ulonglong(quint64 &u64);

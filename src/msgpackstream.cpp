@@ -24,15 +24,15 @@
         return retVal;
 
 MsgPackStream::MsgPackStream() :
-    dev(0), owndev(false), q_status(Ok)
+    dev(0), owndev(false), q_status(Ok), flushWrites(false)
 { }
 
 MsgPackStream::MsgPackStream(QIODevice *d) :
-    dev(d), owndev(false), q_status(Ok)
+    dev(d), owndev(false), q_status(Ok), flushWrites(false)
 { }
 
 MsgPackStream::MsgPackStream(QByteArray *a, QIODevice::OpenMode mode) :
-    owndev(true), q_status(Ok)
+    owndev(true), q_status(Ok), flushWrites(false)
 {
     QBuffer *buf = new QBuffer(a);
     buf->open(mode);
@@ -40,7 +40,7 @@ MsgPackStream::MsgPackStream(QByteArray *a, QIODevice::OpenMode mode) :
 }
 
 MsgPackStream::MsgPackStream(const QByteArray &a) :
-    owndev(true), q_status(Ok)
+    owndev(true), q_status(Ok), flushWrites(false)
 {
     QBuffer *buf = new QBuffer();
     buf->setData(a);
@@ -85,6 +85,16 @@ void MsgPackStream::resetStatus()
 void MsgPackStream::setStatus(Status status)
 {
     q_status = status;
+}
+
+void MsgPackStream::setFlushWrites(bool flush)
+{
+    flushWrites = flush;
+}
+
+bool MsgPackStream::willFlushWrites()
+{
+    return flushWrites;
 }
 
 MsgPackStream &MsgPackStream::operator>>(bool &b)
@@ -502,6 +512,16 @@ bool MsgPackStream::writeBytes(const char *data, uint len)
         if (thisWrite < 0) {
             setStatus(WriteFailed);
             return false;
+        }
+        /* Apparently on Windows, the buffer size for named pipes is 0, and
+         * any data that is written before the remote end reads it is
+         * dropped (!!) without error (see https://bugreports.qt.io/browse/QTBUG-18385).
+         * We must be very sure that the data has been written before we try
+         * another write. This degrades performance in other cases, so callers
+         * must enable this behavior explicitly.
+         */
+        if (this->flushWrites) {
+            dev->waitForBytesWritten(-1);
         }
 
         /* Increment the write pointer and the total byte count. */
