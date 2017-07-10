@@ -42,7 +42,7 @@ public:
     MsgPackStream &operator>>(double &d);
     MsgPackStream &operator>>(QString &str);
     MsgPackStream &operator>>(QByteArray &array);
-    bool readBytes(char *data, uint len);
+    bool readBytes(char *data, qint64 len);
     bool readExtHeader(quint32 &len);
 
     MsgPackStream &operator<<(bool b);
@@ -55,7 +55,7 @@ public:
     MsgPackStream &operator<<(QString str);
     MsgPackStream &operator<<(const char *str);
     MsgPackStream &operator<<(QByteArray array);
-    bool writeBytes(const char *data, uint len);
+    bool writeBytes(const char *data, qint64 len);
     bool writeExtHeader(quint32 len, qint8 msgpackType);
 
 private:
@@ -97,7 +97,7 @@ MsgPackStream& operator>>(MsgPackStream& s, QList<T> &list)
 {
     list.clear();
     quint8 p[5];
-    quint32 len;
+    quint32 len = 0;
     s.readBytes((char *)p, 1);
     if (p[0] >= 0x90 && p[0] <= 0x9f) {
         len = p[0] & 0xf;

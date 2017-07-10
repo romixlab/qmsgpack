@@ -1,3 +1,5 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 #include "msgpackstream.h"
 #include "private/pack_p.h"
 
@@ -105,7 +107,7 @@ MsgPackStream &MsgPackStream::operator>>(bool &b)
         b = false;
         setStatus(ReadPastEnd);
     } else {
-        if (p[0] != MsgPack::FirstByte::MTRUE ||
+        if (p[0] != MsgPack::FirstByte::MTRUE &&
             p[0] != MsgPack::FirstByte::MFALSE)
             setStatus(ReadCorruptData);
         b = (p[0] == MsgPack::FirstByte::MTRUE);
@@ -329,11 +331,11 @@ MsgPackStream &MsgPackStream::operator>>(QByteArray &array)
     return *this;
 }
 
-bool MsgPackStream::readBytes(char *data, uint len)
+bool MsgPackStream::readBytes(char *data, qint64 len)
 {
     CHECK_STREAM_PRECOND(false);
-    uint readed = 0;
-    uint thisRead = 0;
+    qint64 readed = 0;
+    qint64 thisRead = 0;
     while (readed < len)
     {
         thisRead = dev->read(data, (len - readed));
@@ -395,7 +397,7 @@ MsgPackStream &MsgPackStream::operator<<(bool b)
     CHECK_STREAM_WRITE_PRECOND(*this);
     quint8 m = b == true ?
                 MsgPack::FirstByte::MTRUE : MsgPack::FirstByte::MFALSE;
-    if (writeBytes((char *)&m, 1) != 1)
+    if (!writeBytes((char *)&m, 1))
         setStatus(WriteFailed);
     return *this;
 }
@@ -405,7 +407,7 @@ MsgPackStream &MsgPackStream::operator<<(quint32 u32)
     CHECK_STREAM_WRITE_PRECOND(*this);
     quint8 p[5];
     quint8 sz = MsgPackPrivate::pack_uint(u32, p, true) - p;
-    if (writeBytes((char *)p, sz) != sz)
+    if (!writeBytes((char *)p, sz))
         setStatus(WriteFailed);
     return *this;
 }
@@ -415,7 +417,7 @@ MsgPackStream &MsgPackStream::operator<<(quint64 u64)
     CHECK_STREAM_WRITE_PRECOND(*this);
     quint8 p[9];
     quint8 sz = MsgPackPrivate::pack_ulonglong(u64, p, true) - p;
-    if (writeBytes((char *)p, sz) != sz)
+    if (!writeBytes((char *)p, sz))
         setStatus(WriteFailed);
     return *this;
 }
@@ -425,7 +427,7 @@ MsgPackStream &MsgPackStream::operator<<(qint32 i32)
     CHECK_STREAM_WRITE_PRECOND(*this);
     quint8 p[5];
     quint8 sz = MsgPackPrivate::pack_int(i32, p, true) - p;
-    if (writeBytes((char *)p, sz) != sz)
+    if (!writeBytes((char *)p, sz))
         setStatus(WriteFailed);
     return *this;
 }
@@ -435,7 +437,7 @@ MsgPackStream &MsgPackStream::operator<<(qint64 i64)
     CHECK_STREAM_WRITE_PRECOND(*this);
     quint8 p[9];
     quint8 sz = MsgPackPrivate::pack_longlong(i64, p, true) - p;
-    if (writeBytes((char *)p, sz) != sz)
+    if (!writeBytes((char *)p, sz))
         setStatus(WriteFailed);
     return *this;
 }
@@ -445,7 +447,7 @@ MsgPackStream &MsgPackStream::operator<<(float f)
     CHECK_STREAM_WRITE_PRECOND(*this);
     quint8 p[5];
     quint8 sz = MsgPackPrivate::pack_float(f, p, true) - p;
-    if (writeBytes((char *)p, sz) != sz)
+    if (!writeBytes((char *)p, sz))
         setStatus(WriteFailed);
     return *this;
 }
@@ -455,7 +457,7 @@ MsgPackStream &MsgPackStream::operator<<(double d)
     CHECK_STREAM_WRITE_PRECOND(*this);
     quint8 p[9];
     quint8 sz = MsgPackPrivate::pack_double(d, p, true) - p;
-    if (writeBytes((char *)p, sz) != sz)
+    if (!writeBytes((char *)p, sz))
         setStatus(WriteFailed);
     return *this;
 }
@@ -463,11 +465,11 @@ MsgPackStream &MsgPackStream::operator<<(double d)
 MsgPackStream &MsgPackStream::operator<<(QString str)
 {
     CHECK_STREAM_WRITE_PRECOND(*this);
-    quint8 *p = (quint8 *)0;
-    quint32 sz = MsgPackPrivate::pack_string(str, p, false) - p;
+    ptrdiff_t sz = MsgPackPrivate::pack_string(str, nullptr, false) -
+        static_cast<quint8 *>(nullptr);
     quint8 *data = new quint8[sz];
     MsgPackPrivate::pack_string(str, data, true);
-    if (writeBytes((char *)data, sz) != sz)
+    if (!writeBytes((char *)data, sz))
         setStatus(WriteFailed);
     delete[] data;
     return *this;
@@ -476,12 +478,12 @@ MsgPackStream &MsgPackStream::operator<<(QString str)
 MsgPackStream &MsgPackStream::operator<<(const char *str)
 {
     CHECK_STREAM_WRITE_PRECOND(*this);
-    quint8 *p = (quint8 *)0;
     quint32 str_len = strlen(str);
-    quint32 sz = MsgPackPrivate::pack_string_raw(str, str_len, p, false) - p;
+    ptrdiff_t sz = MsgPackPrivate::pack_string_raw(str, str_len, nullptr, false) -
+        static_cast<quint8 *>(nullptr);
     quint8 *data = new quint8[sz];
     MsgPackPrivate::pack_string_raw(str, str_len, data, true);
-    if (writeBytes((char *)data, sz) != sz)
+    if (!writeBytes((char *)data, sz))
         setStatus(WriteFailed);
     delete[] data;
     return *this;
@@ -493,20 +495,20 @@ MsgPackStream &MsgPackStream::operator<<(QByteArray array)
     quint8 p[5];
     quint32 len = array.length();
     quint8 header_len = MsgPackPrivate::pack_bin_header(len, p, true) - p;
-    if (writeBytes((char *)p, header_len) != header_len) {
+    if (!writeBytes((char *)p, header_len)) {
         setStatus(WriteFailed);
         return *this;
     }
-    if (writeBytes(array.data(), len) != len)
+    if (!writeBytes(array.data(), len))
         setStatus(WriteFailed);
     return *this;
 }
 
-bool MsgPackStream::writeBytes(const char *data, uint len)
+bool MsgPackStream::writeBytes(const char *data, qint64 len)
 {
     CHECK_STREAM_WRITE_PRECOND(false);
-    uint written = 0;
-    uint thisWrite;
+    qint64 written = 0;
+    qint64 thisWrite;
     while (written < len) {
         thisWrite = dev->write(data, len - written);
         if (thisWrite < 0) {
@@ -563,7 +565,7 @@ bool MsgPackStream::writeExtHeader(quint32 len, qint8 msgpackType)
         d[5] = msgpackType;
         sz = 6;
     }
-    if (writeBytes((const char *)d, sz) != sz) {
+    if (!writeBytes((const char *)d, sz)) {
         setStatus(WriteFailed);
         return false;
     }

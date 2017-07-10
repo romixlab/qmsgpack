@@ -1,0 +1,8 @@
+Execute following:
+cd qmsgpack
+mkdir build
+cd build
+cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=On -DBUILD_TESTS=True ..
+pvs-studio-analyzer analyze -o ../qmsgpack.log
+plog-converter -a GA:1,2 -t tasklist -o ../qmsgpack.tasks ../qmsgpack.log
+See qmsgpack.tasks then

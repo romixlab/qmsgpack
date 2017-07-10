@@ -1,3 +1,5 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 #include <QString>
 #include <QtTest>
 #include <msgpack.h>
@@ -126,7 +128,7 @@ void MixedTest::test_map()
 class CustomType
 {
 public:
-    CustomType() {}
+    CustomType() : m_size(777) {}
     CustomType(const CustomType &other) { m_size = other.m_size; }
     ~CustomType() {}
 

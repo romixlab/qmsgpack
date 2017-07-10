@@ -1,3 +1,5 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 #include "msgpack.h"
 #include "private/unpack_p.h"
 #include "private/pack_p.h"
@@ -15,15 +17,15 @@ QVariant MsgPack::unpack(const QByteArray &data)
 
 QByteArray MsgPack::pack(const QVariant &variant)
 {
-    quint8 *p = 0;
     QVector<QByteArray> user_data;
-    quint8 *end = MsgPackPrivate::pack(variant, p, false, user_data);
-    quint32 size = end - p;
-    //qDebug() << "size probe:" << size;
-
+    // first run, calculate size
+    ptrdiff_t size = MsgPackPrivate::pack(variant, nullptr, false, user_data) -
+        static_cast<quint8 *>(nullptr);
     QByteArray arr;
     arr.resize(size);
-    end = MsgPackPrivate::pack(variant, (quint8 *)arr.data(), true, user_data);
+
+    // second run, pack it
+    MsgPackPrivate::pack(variant, (quint8 *)arr.data(), true, user_data);
 
     return arr;
 }
