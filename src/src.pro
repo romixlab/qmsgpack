@@ -43,6 +43,7 @@ HEADERS_INSTALL = \
     msgpackstream.h \
 
 STREAM_HEADERS_INSTALL = \
+    stream/geometry.h \
     stream/time.h
 
 qtHaveModule(location) {
