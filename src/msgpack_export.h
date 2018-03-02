@@ -3,10 +3,14 @@
 
 #include <QtCore/qglobal.h>
 
-#if defined(MSGPACK_MAKE_LIB) // building lib
-#define MSGPACK_EXPORT Q_DECL_EXPORT
-#else // using lib
-#define MSGPACK_EXPORT Q_DECL_IMPORT
+#ifndef MSGPACK_STATIC
+#  if defined(MSGPACK_MAKE_LIB)
+#    define MSGPACK_EXPORT Q_DECL_EXPORT
+#  else
+#    define MSGPACK_EXPORT Q_DECL_IMPORT
+#  endif
+#else
+#  define MSGPACK_EXPORT
 #endif
 
 #endif // MSGPACK_EXPORT_H
