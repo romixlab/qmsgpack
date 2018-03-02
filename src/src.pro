@@ -5,7 +5,7 @@ CONFIG   -= app_bundle
 
 TEMPLATE = lib
 DEFINES += MSGPACK_MAKE_LIB
-DESTDIR = $$TOP_SRCDIR/bin
+DESTDIR = $$PWD/../bin
 QMAKE_CXXFLAGS += -fPIC
 
 CONFIG   += debug_and_release
