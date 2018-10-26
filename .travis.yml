@@ -9,7 +9,7 @@ env:
 before_install:
  - sudo add-apt-repository --yes ppa:beineri/opt-qt591-trusty
  - sudo apt-get update -qq
- - sudo apt-get install -qq cmake qt59-meta-full
+ - sudo apt-get install -qq qt59base
 
 script:
  - mkdir build
