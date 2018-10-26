@@ -1,7 +1,7 @@
-set(Qt5Core_DIR "/opt/Qt5.6.0/5.6/gcc_64/lib/cmake/Qt5Core")
-set(Qt5Test_DIR "/opt/Qt5.6.0/5.6/gcc_64/lib/cmake/Qt5Test")
-set(Qt5_DIR "/opt/Qt5.6.0/5.6/gcc_64/lib/cmake/Qt5Core")
-set(QT_QMAKE_EXECUTABLE "/opt/Qt5.6.0/5.6/gcc_64/bin/qmake")
+#set(Qt5Core_DIR "/opt/Qt5.6.0/5.6/gcc_64/lib/cmake/Qt5Core")
+#set(Qt5Test_DIR "/opt/Qt5.6.0/5.6/gcc_64/lib/cmake/Qt5Test")
+#set(Qt5_DIR "/opt/Qt5.6.0/5.6/gcc_64/lib/cmake/Qt5Core")
+#set(QT_QMAKE_EXECUTABLE "/opt/Qt5.6.0/5.6/gcc_64/bin/qmake")
 
 project(qmsgpack)
 
