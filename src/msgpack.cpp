@@ -3,13 +3,16 @@
 #include "msgpack.h"
 #include "private/unpack_p.h"
 #include "private/pack_p.h"
-#include "private/qt_types_p.h"
 
 #include <QVector>
+
+#ifndef MSGPACK_NO_PACKTYPES
+#include "private/qt_types_p.h"
 
 #ifdef QT_LOCATION_LIB
 #include <QGeoCoordinate>
 #endif
+#endif // MSGPACK_NO_PACKTYPES
 
 QVariant MsgPack::unpack(const QByteArray &data)
 {
@@ -51,6 +54,7 @@ qint8 MsgPack::msgpackType(int qType)
 
 bool MsgPack::registerType(QMetaType::Type qType, quint8 msgpackType)
 {
+#ifndef MSGPACK_NO_PACKTYPES
     switch (qType) {
 #ifdef QT_GUI_LIB
     case QMetaType::QColor:
@@ -92,6 +96,9 @@ bool MsgPack::registerType(QMetaType::Type qType, quint8 msgpackType)
 #endif // QT_LOCATION_LIB
         break;
     }
+#else
+    Q_UNUSED(msgpackType)
+#endif // MSGPACK_NO_PACKTYPES
 
     qWarning("qmsgpack was built without metatype %d support.", int(qType));
     qWarning("Use MsgPack::registerPacker() and MsgPack::registerUnpacker() to register metatype %d manually.", int(qType));

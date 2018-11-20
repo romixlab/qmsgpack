@@ -3,6 +3,10 @@ TEMPLATE = subdirs
 SUBDIRS += \
     pack \
     unpack \
-    mixed \
-    stream \
-    qttypes
+    mixed
+
+!contains(DEFINES, MSGPACK_NO_PACKTYPES) {
+    SUBDIRS += \
+        stream \
+        qttypes
+}
