@@ -11,8 +11,6 @@
 
 #ifdef QT_GUI_LIB
 #include <QColor>
-#else
-#define NO_QTGUI_WARNING "qmsgpack was built without QtGui, hence some types are not available"
 #endif
 
 #ifdef QT_LOCATION_LIB
@@ -21,45 +19,6 @@
 
 #include <QTime>
 #include <QRect>
-
-bool MsgPackPrivate::register_qtype(QMetaType::Type q_type, quint8 msgpack_type)
-{
-	if (q_type == QMetaType::QColor) {
-		#ifdef QT_GUI_LIB
-        MsgPackPrivate::register_packer(q_type, msgpack_type, pack_qcolor);
-    	MsgPackPrivate::register_unpacker(msgpack_type, unpack_qcolor);
-    	#else
-        qWarning() << NO_QTGUI_WARNING;
-    	return false;
-    	#endif //QT_GUI_LIB
-#ifdef QT_LOCATION_LIB
-    } else if ((int)q_type == qMetaTypeId<QGeoCoordinate>()) {
-        MsgPackPrivate::register_packer((QMetaType::Type)qMetaTypeId<QGeoCoordinate>(),
-                                        msgpack_type,
-                                        pack_qgeocoordinate);
-        MsgPackPrivate::register_unpacker(msgpack_type, unpack_qgeocoordinate);
-#endif
-    } else if (q_type == QMetaType::QTime) {
-        MsgPackPrivate::register_packer(q_type, msgpack_type, pack_qtime);
-        MsgPackPrivate::register_unpacker(msgpack_type, unpack_qtime);
-    } else if (q_type == QMetaType::QDate) {
-        MsgPackPrivate::register_packer(q_type, msgpack_type, pack_qdate);
-        MsgPackPrivate::register_unpacker(msgpack_type, unpack_qdate);
-    } else if (q_type == QMetaType::QDateTime) {
-        MsgPackPrivate::register_packer(q_type, msgpack_type, pack_qdatetime);
-        MsgPackPrivate::register_unpacker(msgpack_type, unpack_qdatetime);
-    } else if (q_type == QMetaType::QPoint) {
-        MsgPackPrivate::register_packer(q_type, msgpack_type, pack_qpoint);
-        MsgPackPrivate::register_unpacker(msgpack_type, unpack_qpoint);
-    } else if (q_type == QMetaType::QSize) {
-        MsgPackPrivate::register_packer(q_type, msgpack_type, pack_qsize);
-        MsgPackPrivate::register_unpacker(msgpack_type, unpack_qsize);
-    } else if (q_type == QMetaType::QRect) {
-        MsgPackPrivate::register_packer(q_type, msgpack_type, pack_qrect);
-        MsgPackPrivate::register_unpacker(msgpack_type, unpack_qrect);
-    }
-    return true;
-}
 
 #ifdef QT_GUI_LIB
 QByteArray MsgPackPrivate::pack_qcolor(const QVariant &variant)

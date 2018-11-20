@@ -6,8 +6,6 @@
 
 namespace MsgPackPrivate
 {
-bool register_qtype(QMetaType::Type q_type, quint8 msgpack_type);
-
 #ifdef QT_GUI_LIB
 QByteArray pack_qcolor(const QVariant &variant);
 QVariant unpack_qcolor(const QByteArray &data);
