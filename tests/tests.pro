@@ -1,4 +1,8 @@
 TEMPLATE = subdirs
 
 SUBDIRS += \
-    stream
+    pack \
+    unpack \
+    mixed \
+    stream \
+    qttypes

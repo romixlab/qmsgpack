@@ -1,7 +1,7 @@
-TARGET = unpack_test
+TARGET = qttypes_test
 QT += testlib
 CONFIG += testcase
 
 include(../tests.pri)
 
-SOURCES += unpack_test.cpp
+SOURCES += qttypes_test.cpp
