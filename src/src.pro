@@ -1,4 +1,4 @@
-QT       += core gui
+QT       += core
 
 TARGET = qmsgpack
 CONFIG   -= app_bundle
@@ -45,6 +45,10 @@ HEADERS_INSTALL = \
 STREAM_HEADERS_INSTALL = \
     stream/geometry.h \
     stream/time.h
+
+qtHaveModule(gui) {
+    QT += gui
+}
 
 qtHaveModule(location) {
     QT += location

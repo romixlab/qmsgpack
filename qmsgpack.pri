@@ -26,6 +26,10 @@ HEADERS += \
     $$PWD/src/stream/time.h \
     $$PWD/src/stream/geometry.h
 
+qtHaveModule(gui) {
+    QT += gui
+}
+
 qtHaveModule(location) {
     QT += location
 
