@@ -1,2 +1,2 @@
 INCLUDEPATH += ../../src
-LIBS += -L"$$PWD/../bin" -lqmsgpackd
+LIBS += -L$$shadowed($$PWD/../bin) -l$$qtLibraryTarget(qmsgpack)
