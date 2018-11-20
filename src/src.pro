@@ -1,5 +1,3 @@
-QT       += core
-
 TARGET = qmsgpack
 CONFIG   -= app_bundle
 
@@ -13,27 +11,7 @@ CONFIG(debug, debug|release) {
      TARGET = $$join(TARGET,,,d)
 }
 
-
-SOURCES += msgpack.cpp \
-    msgpackcommon.cpp \
-    private/pack_p.cpp \
-    private/unpack_p.cpp \
-    private/qt_types_p.cpp \
-    msgpackstream.cpp \
-    stream/time.cpp \
-    stream/geometry.cpp
-
-HEADERS += \
-    msgpack.h \
-    private/pack_p.h \
-    private/unpack_p.h \
-    endianhelper.h \
-    msgpackcommon.h \
-    msgpack_export.h \
-    private/qt_types_p.h \
-    msgpackstream.h \
-    stream/time.h \
-    stream/geometry.h
+include(../qmsgpack.pri)
 
 HEADERS_INSTALL = \
     msgpack.h \
@@ -46,15 +24,7 @@ STREAM_HEADERS_INSTALL = \
     stream/geometry.h \
     stream/time.h
 
-qtHaveModule(gui) {
-    QT += gui
-}
-
 qtHaveModule(location) {
-    QT += location
-
-    SOURCES += stream/location.cpp
-    HEADERS += stream/location.h
     STREAM_HEADERS_INSTALL += stream/location.h
 }
 
