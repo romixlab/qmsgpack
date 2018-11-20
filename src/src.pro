@@ -2,14 +2,10 @@ TARGET = qmsgpack
 VER_MAJ = 0
 VER_MIN = 1
 VER_PAT = 0
-CONFIG   -= app_bundle
 
 TEMPLATE = lib
 DEFINES += MSGPACK_MAKE_LIB
 DESTDIR = $$shadowed($$PWD/../bin)
-QMAKE_CXXFLAGS += -fPIC
-
-CONFIG   += debug_and_release
 TARGET = $$qtLibraryTarget($$TARGET)
 VERSION = $$join($$list($$VER_MAJ $$VER_MIN $$VER_PAT), .)
 
