@@ -11,6 +11,11 @@ before_install:
  - sudo add-apt-repository --yes ppa:ubuntu-toolchain-r/test
  - sudo add-apt-repository --yes ppa:ubuntu-sdk-team/ppa
  - sudo apt-get update -qq
+ 
+install:
+ - sudo apt-get install -y --force-yes build-essential g++-4.8 -y
+ - sudo apt-get install -y --force-yes qtbase5-dev qttools5-dev-tools qttools5-dev
+
 
 script:
  - mkdir build
