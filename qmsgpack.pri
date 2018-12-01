@@ -1,7 +1,5 @@
 QT       += core
 
-DEFINES += MSGPACK_MAKE_LIB
-
 INCLUDEPATH += $$PWD/src
 
 SOURCES += \
@@ -25,6 +23,10 @@ HEADERS += \
     $$PWD/src/msgpackstream.h \
     $$PWD/src/stream/time.h \
     $$PWD/src/stream/geometry.h
+
+qtHaveModule(gui) {
+    QT += gui
+}
 
 qtHaveModule(location) {
     QT += location

@@ -1,39 +1,15 @@
-QT       += core gui
-
 TARGET = qmsgpack
-CONFIG   -= app_bundle
+VER_MAJ = 0
+VER_MIN = 1
+VER_PAT = 0
 
 TEMPLATE = lib
 DEFINES += MSGPACK_MAKE_LIB
-DESTDIR = $$PWD/../bin
-QMAKE_CXXFLAGS += -fPIC
+DESTDIR = $$shadowed($$PWD/../bin)
+TARGET = $$qtLibraryTarget($$TARGET)
+VERSION = $$join($$list($$VER_MAJ $$VER_MIN $$VER_PAT), .)
 
-CONFIG   += debug_and_release
-CONFIG(debug, debug|release) {
-     TARGET = $$join(TARGET,,,d)
-}
-
-
-SOURCES += msgpack.cpp \
-    msgpackcommon.cpp \
-    private/pack_p.cpp \
-    private/unpack_p.cpp \
-    private/qt_types_p.cpp \
-    msgpackstream.cpp \
-    stream/time.cpp \
-    stream/geometry.cpp
-
-HEADERS += \
-    msgpack.h \
-    private/pack_p.h \
-    private/unpack_p.h \
-    endianhelper.h \
-    msgpackcommon.h \
-    msgpack_export.h \
-    private/qt_types_p.h \
-    msgpackstream.h \
-    stream/time.h \
-    stream/geometry.h
+include(../qmsgpack.pri)
 
 HEADERS_INSTALL = \
     msgpack.h \
@@ -43,13 +19,10 @@ HEADERS_INSTALL = \
     msgpackstream.h \
 
 STREAM_HEADERS_INSTALL = \
+    stream/geometry.h \
     stream/time.h
 
 qtHaveModule(location) {
-    QT += location
-
-    SOURCES += stream/location.cpp
-    HEADERS += stream/location.h
     STREAM_HEADERS_INSTALL += stream/location.h
 }
 
