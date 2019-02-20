@@ -22,10 +22,11 @@ QByteArray MsgPack::pack(const QVariant &variant)
     ptrdiff_t size = MsgPackPrivate::pack(variant, nullptr, false, user_data) -
         static_cast<quint8 *>(nullptr);
     QByteArray arr;
-    arr.resize(size);
+    arr.resize(static_cast<int>(size));
 
     // second run, pack it
-    MsgPackPrivate::pack(variant, (quint8 *)arr.data(), true, user_data);
+    MsgPackPrivate::pack(variant, reinterpret_cast<quint8*>(arr.data()), true,
+                         user_data);
 
     return arr;
 }
@@ -42,7 +43,7 @@ bool MsgPack::registerUnpacker(qint8 msgpackType, MsgPack::unpack_user_f unpacke
 
 qint8 MsgPack::msgpackType(int qType)
 {
-    return MsgPackPrivate::msgpack_type((QMetaType::Type)qType);
+    return MsgPackPrivate::msgpack_type(static_cast<QMetaType::Type>(qType));
 }
 
 bool MsgPack::registerType(QMetaType::Type qType, quint8 msgpackType)
