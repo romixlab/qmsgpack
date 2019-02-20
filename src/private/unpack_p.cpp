@@ -47,17 +47,18 @@ MsgPackPrivate::type_parser_f MsgPackPrivate::unpackers[32] = {
 QHash<qint8, MsgPack::unpack_user_f> MsgPackPrivate::user_unpackers;
 QReadWriteLock MsgPackPrivate::unpackers_lock;
 
-QVariant MsgPackPrivate::unpack(quint8 *p, quint8 *end)
+QVariant MsgPackPrivate::unpack(const quint8 *p, const quint8 *end)
 {
     QVariantList d;
 
     QVariant v;
-    while (p <= end) {
-        p = unpack_type(v, p);
+    quint8* pos = const_cast<quint8*>(p); // FIXME
+    while (pos <= end) {
+        pos = unpack_type(v, pos);
         d.append(v);
     }
 
-    if (p - end > 1)
+    if (pos - end > 1)
         return QVariant();
 
     if (d.length() == 1)

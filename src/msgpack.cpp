@@ -9,8 +9,8 @@
 
 QVariant MsgPack::unpack(const QByteArray &data)
 {
-    quint8 *p = (quint8 *)data.data();
-    quint8 *end = p + data.size() - 1;
+    const quint8 *p = reinterpret_cast<const quint8*>(data.data());
+    const quint8 *end = p + data.size() - 1;
 
     return MsgPackPrivate::unpack(p, end);
 }

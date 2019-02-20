@@ -23,7 +23,7 @@ extern QHash<qint8, MsgPack::unpack_user_f> user_unpackers;
 extern QReadWriteLock unpackers_lock;
 
 // goes from p to end unpacking types with unpack_type function below
-QVariant unpack(quint8 *p, quint8 *end);
+QVariant unpack(const quint8 *p, const quint8 *end);
 // unpack some type, can be called recursively from other unpack functions
 quint8 * unpack_type(QVariant &v, quint8 *p);
 
