@@ -410,7 +410,7 @@ quint8 * MsgPackPrivate::unpack_ext32(QVariant &v, quint8 *p)
 
 bool MsgPackPrivate::register_unpacker(qint8 msgpack_type, MsgPack::unpack_user_f unpacker)
 {
-    if (unpacker == 0) {
+    if (unpacker == nullptr) {
         qWarning() << "MsgPack::unpacker for type" << msgpack_type << "is invalid";
         return false;
     }
