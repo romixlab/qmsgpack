@@ -15,8 +15,8 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-#ifndef MSGPACK_SYSDEP_H__
-#define MSGPACK_SYSDEP_H__
+#ifndef MSGPACK_ENDIAN_HELPER_H
+#define MSGPACK_ENDIAN_HELPER_H
 #include <qglobal.h>
 
 #if defined(_WIN32) && defined(_MSC_VER) && _MSC_VER >= 1600
@@ -154,5 +154,5 @@
     ({ type val; memcpy(&val, (char*)from, 8); _msgpack_be64(val); })
 */
 
-#endif /* msgpack/sysdep.h */
+#endif /* msgpack/endianhelper.h */
 
