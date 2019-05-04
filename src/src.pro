@@ -18,12 +18,14 @@ HEADERS_INSTALL = \
     msgpack_export.h \
     msgpackstream.h \
 
-STREAM_HEADERS_INSTALL = \
-    stream/geometry.h \
-    stream/time.h
+!contains(DEFINES, MSGPACK_NO_PACKTYPES) {
+    STREAM_HEADERS_INSTALL = \
+        stream/geometry.h \
+        stream/time.h
 
-qtHaveModule(location) {
-    STREAM_HEADERS_INSTALL += stream/location.h
+    qtHaveModule(location) {
+        STREAM_HEADERS_INSTALL += stream/location.h
+    }
 }
 
 unix {
