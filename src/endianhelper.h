@@ -15,8 +15,8 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-#ifndef MSGPACK_SYSDEP_H__
-#define MSGPACK_SYSDEP_H__
+#ifndef MSGPACK_ENDIAN_HELPER_H
+#define MSGPACK_ENDIAN_HELPER_H
 #include <qglobal.h>
 
 #if defined(_WIN32) && defined(_MSC_VER) && _MSC_VER >= 1600
@@ -44,11 +44,12 @@
 #  if defined(ntohs)
 #    define _msgpack_be16(x) ntohs(x)
 #  elif defined(_byteswap_ushort) || (defined(_MSC_VER) && _MSC_VER >= 1400)
-#    define _msgpack_be16(x) ((uint16_t)_byteswap_ushort((unsigned short)x))
+#    define _msgpack_be16(x) ( \
+       static_cast<uint16_t>(_byteswap_ushort(static_cast<unsigned short>(x))) )
 #  else
 #    define _msgpack_be16(x) ( \
-        ((((quint16)x) <<  8) ) | \
-        ((((quint16)x) >>  8) ) )
+       (((static_cast<quint16>(x)) <<  8) ) | \
+       (((static_cast<quint16>(x)) >>  8) ) )
 #  endif
 #else
 #  define _msgpack_be16(x) ntohs(x)
@@ -58,13 +59,14 @@
 #  if defined(ntohl)
 #    define _msgpack_be32(x) ntohl(x)
 #  elif defined(_byteswap_ulong) || (defined(_MSC_VER) && _MSC_VER >= 1400)
-#    define _msgpack_be32(x) ((uint32_t)_byteswap_ulong((unsigned long)x))
+#    define _msgpack_be32(x) ( \
+       static_cast<uint32_t>(_byteswap_ulong(static_cast<unsigned long>(x))) )
 #  else
 #    define _msgpack_be32(x) \
-        ( ((((quint32)x) << 24)               ) | \
-          ((((quint32)x) <<  8) & 0x00ff0000U ) | \
-          ((((quint32)x) >>  8) & 0x0000ff00U ) | \
-          ((((quint32)x) >> 24)               ) )
+        ( (((static_cast<quint32>(x)) << 24)               ) | \
+          (((static_cast<quint32>(x)) <<  8) & 0x00ff0000U ) | \
+          (((static_cast<quint32>(x)) >>  8) & 0x0000ff00U ) | \
+          (((static_cast<quint32>(x)) >> 24)               ) )
 #  endif
 #else
 #  define _msgpack_be32(x) ntohl(x)
@@ -78,35 +80,35 @@
 #  define _msgpack_be64(x) __DARWIN_OSSwapInt64(x)
 #else
 #define _msgpack_be64(x) \
-    ( ((((quint64)x) << 56)                         ) | \
-      ((((quint64)x) << 40) & 0x00ff000000000000ULL ) | \
-      ((((quint64)x) << 24) & 0x0000ff0000000000ULL ) | \
-      ((((quint64)x) <<  8) & 0x000000ff00000000ULL ) | \
-      ((((quint64)x) >>  8) & 0x00000000ff000000ULL ) | \
-      ((((quint64)x) >> 24) & 0x0000000000ff0000ULL ) | \
-      ((((quint64)x) >> 40) & 0x000000000000ff00ULL ) | \
-      ((((quint64)x) >> 56)                         ) )
+    ( (((static_cast<quint64>(x)) << 56)                         ) | \
+      (((static_cast<quint64>(x)) << 40) & 0x00ff000000000000ULL ) | \
+      (((static_cast<quint64>(x)) << 24) & 0x0000ff0000000000ULL ) | \
+      (((static_cast<quint64>(x)) <<  8) & 0x000000ff00000000ULL ) | \
+      (((static_cast<quint64>(x)) >>  8) & 0x00000000ff000000ULL ) | \
+      (((static_cast<quint64>(x)) >> 24) & 0x0000000000ff0000ULL ) | \
+      (((static_cast<quint64>(x)) >> 40) & 0x000000000000ff00ULL ) | \
+      (((static_cast<quint64>(x)) >> 56)                         ) )
 #endif
 
-#define _msgpack_load16(cast, from) ((cast)( \
-        (((quint16)((quint8*)(from))[0]) << 8) | \
-        (((quint16)((quint8*)(from))[1])     ) ))
+#define _msgpack_load16(type, from) ((static_cast<type>( \
+        ((static_cast<quint16>(static_cast<quint8*>(from)[0])) << 8) | \
+        ((static_cast<quint16>(static_cast<quint8*>(from)[1]))     ) )))
 
-#define _msgpack_load32(cast, from) ((cast)( \
-        (((quint32)((quint8*)(from))[0]) << 24) | \
-        (((quint32)((quint8*)(from))[1]) << 16) | \
-        (((quint32)((quint8*)(from))[2]) <<  8) | \
-        (((quint32)((quint8*)(from))[3])      ) ))
+#define _msgpack_load32(type, from) ((static_cast<type>( \
+        ((static_cast<quint32>(static_cast<quint8*>(from)[0])) << 24) | \
+        ((static_cast<quint32>(static_cast<quint8*>(from)[1])) << 16) | \
+        ((static_cast<quint32>(static_cast<quint8*>(from)[2])) <<  8) | \
+        ((static_cast<quint32>(static_cast<quint8*>(from)[3]))      ) )))
 
-#define _msgpack_load64(cast, from) ((cast)( \
-        (((quint64)((quint8*)(from))[0]) << 56) | \
-        (((quint64)((quint8*)(from))[1]) << 48) | \
-        (((quint64)((quint8*)(from))[2]) << 40) | \
-        (((quint64)((quint8*)(from))[3]) << 32) | \
-        (((quint64)((quint8*)(from))[4]) << 24) | \
-        (((quint64)((quint8*)(from))[5]) << 16) | \
-        (((quint64)((quint8*)(from))[6]) << 8)  | \
-        (((quint64)((quint8*)(from))[7])     )  ))
+#define _msgpack_load64(type, from) ((static_cast<type>( \
+        ((static_cast<quint64>(static_cast<quint8*>(from)[0])) << 56) | \
+        ((static_cast<quint64>(static_cast<quint8*>(from)[1])) << 48) | \
+        ((static_cast<quint64>(static_cast<quint8*>(from)[2])) << 40) | \
+        ((static_cast<quint64>(static_cast<quint8*>(from)[3])) << 32) | \
+        ((static_cast<quint64>(static_cast<quint8*>(from)[4])) << 24) | \
+        ((static_cast<quint64>(static_cast<quint8*>(from)[5])) << 16) | \
+        ((static_cast<quint64>(static_cast<quint8*>(from)[6])) << 8)  | \
+        ((static_cast<quint64>(static_cast<quint8*>(from)[7]))     )  )))
 
 #else
 
@@ -114,25 +116,25 @@
 #define _msgpack_be32(x) (x)
 #define _msgpack_be64(x) (x)
 
-#define _msgpack_load16(cast, from) ((cast)( \
-        (((quint16)((quint8*)from)[0]) << 8) | \
-        (((quint16)((quint8*)from)[1])     ) ))
+#define _msgpack_load16(type, from) (static_cast<type>( \
+        ((static_cast<quint16>(static_cast<quint8*>(from))[0]) << 8) | \
+        ((static_cast<quint16>(static_cast<quint8*>(from))[1])     ) ))
 
-#define _msgpack_load32(cast, from) ((cast)( \
-        (((quint32)((quint8*)from)[0]) << 24) | \
-        (((quint32)((quint8*)from)[1]) << 16) | \
-        (((quint32)((quint8*)from)[2]) <<  8) | \
-        (((quint32)((quint8*)from)[3])      ) ))
+#define _msgpack_load32(type, from) (static_cast<type>( \
+        ((static_cast<quint32>(static_cast<quint8*>(from))[0]) << 24) | \
+        ((static_cast<quint32>(static_cast<quint8*>(from))[1]) << 16) | \
+        ((static_cast<quint32>(static_cast<quint8*>(from))[2]) <<  8) | \
+        ((static_cast<quint32>(static_cast<quint8*>(from))[3])      ) ))
 
-#define _msgpack_load64(cast, from) ((cast)( \
-        (((quint64)((quint8*)from)[0]) << 56) | \
-        (((quint64)((quint8*)from)[1]) << 48) | \
-        (((quint64)((quint8*)from)[2]) << 40) | \
-        (((quint64)((quint8*)from)[3]) << 32) | \
-        (((quint64)((quint8*)from)[4]) << 24) | \
-        (((quint64)((quint8*)from)[5]) << 16) | \
-        (((quint64)((quint8*)from)[6]) << 8)  | \
-        (((quint64)((quint8*)from)[7])     )  ))
+#define _msgpack_load64(type, from) ((static_cast<type>( \
+        ((static_cast<quint64>(static_cast<quint8*>(from))[0]) << 56) | \
+        ((static_cast<quint64>(static_cast<quint8*>(from))[1]) << 48) | \
+        ((static_cast<quint64>(static_cast<quint8*>(from))[2]) << 40) | \
+        ((static_cast<quint64>(static_cast<quint8*>(from))[3]) << 32) | \
+        ((static_cast<quint64>(static_cast<quint8*>(from))[4]) << 24) | \
+        ((static_cast<quint64>(static_cast<quint8*>(from))[5]) << 16) | \
+        ((static_cast<quint64>(static_cast<quint8*>(from))[6]) << 8)  | \
+        ((static_cast<quint64>(static_cast<quint8*>(from))[7])     )  )))
 #endif
 
 
@@ -144,13 +146,13 @@
     do { quint64 val = _msgpack_be64(num); memcpy(to, &val, 8); } while(0)
 
 /*
-#define _msgpack_load16(cast, from) \
-    ({ cast val; memcpy(&val, (char*)from, 2); _msgpack_be16(val); })
-#define _msgpack_load32(cast, from) \
-    ({ cast val; memcpy(&val, (char*)from, 4); _msgpack_be32(val); })
-#define _msgpack_load64(cast, from) \
-    ({ cast val; memcpy(&val, (char*)from, 8); _msgpack_be64(val); })
+#define _msgpack_load16(type, from) \
+    ({ type val; memcpy(&val, (char*)from, 2); _msgpack_be16(val); })
+#define _msgpack_load32(type, from) \
+    ({ type val; memcpy(&val, (char*)from, 4); _msgpack_be32(val); })
+#define _msgpack_load64(type, from) \
+    ({ type val; memcpy(&val, (char*)from, 8); _msgpack_be64(val); })
 */
 
-#endif /* msgpack/sysdep.h */
+#endif /* msgpack/endianhelper.h */
 

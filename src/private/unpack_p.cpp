@@ -47,17 +47,18 @@ MsgPackPrivate::type_parser_f MsgPackPrivate::unpackers[32] = {
 QHash<qint8, MsgPack::unpack_user_f> MsgPackPrivate::user_unpackers;
 QReadWriteLock MsgPackPrivate::unpackers_lock;
 
-QVariant MsgPackPrivate::unpack(quint8 *p, quint8 *end)
+QVariant MsgPackPrivate::unpack(const quint8 *p, const quint8 *end)
 {
     QVariantList d;
 
     QVariant v;
-    while (p <= end) {
-        p = unpack_type(v, p);
+    quint8* pos = const_cast<quint8*>(p); // FIXME
+    while (pos <= end) {
+        pos = unpack_type(v, pos);
         d.append(v);
     }
 
-    if (p - end > 1)
+    if (pos - end > 1)
         return QVariant();
 
     if (d.length() == 1)
@@ -117,19 +118,19 @@ quint8 * MsgPackPrivate::unpack_true(QVariant &v, quint8 *p)
 
 quint8 * MsgPackPrivate::unpack_positive_fixint(QVariant &v, quint8 *p)
 {
-    v = (quint32)*p;
+    v = static_cast<quint32>(*p);
     return p + 1;
 }
 
 quint8 * MsgPackPrivate::unpack_negative_fixint(QVariant &v, quint8 *p)
 {
-    v = (qint8)*p;
+    v = static_cast<qint8>(*p);
     return p + 1;
 }
 
 quint8 * MsgPackPrivate::unpack_uint8(QVariant &v, quint8 *p)
 {
-    v = (quint8)*(++p);
+    v = static_cast<quint8>(*(++p));
     return p + 1;
 }
 
@@ -156,7 +157,7 @@ quint8 * MsgPackPrivate::unpack_uint64(QVariant &v, quint8 *p)
 
 quint8 * MsgPackPrivate::unpack_int8(QVariant &v, quint8 *p)
 {
-    v = (qint8)*(++p);
+    v = static_cast<qint8>(*(++p));
     return p + 1;
 }
 
@@ -184,7 +185,7 @@ quint8 * MsgPackPrivate::unpack_int64(QVariant &v, quint8 *p)
 quint8 * MsgPackPrivate::unpack_float32(QVariant &v, quint8 *p)
 {
     float f;
-    quint8 *fp = (quint8 *)&f;
+    quint8 *fp = reinterpret_cast<quint8 *>(&f);
     p++;
 #ifdef __LITTLE_ENDIAN__
     for (int i = 0; i < 4; ++i)
@@ -200,7 +201,7 @@ quint8 * MsgPackPrivate::unpack_float32(QVariant &v, quint8 *p)
 quint8 * MsgPackPrivate::unpack_float64(QVariant &v, quint8 *p)
 {
     double d;
-    quint8 *fd = (quint8 *)&d;
+    quint8 *fd = reinterpret_cast<quint8 *>(&d);
     p++;
 #ifdef __LITTLE_ENDIAN__
     for (int i = 0; i < 8; ++i)
@@ -217,14 +218,14 @@ quint8 * MsgPackPrivate::unpack_fixstr(QVariant &v, quint8 *p)
 {
     int len = (*p) & 0x1f; // 0b00011111
     p++;
-    v = QString::fromUtf8((char*)p, len);
+    v = QString::fromUtf8(reinterpret_cast<char*>(p), len);
     return p + len;
 }
 
 quint8 * MsgPackPrivate::unpack_str8(QVariant &v, quint8 *p)
 {
     int len = *(++p);
-    v = QString::fromUtf8((char*)(++p), len);
+    v = QString::fromUtf8(reinterpret_cast<char*>((++p)), len);
     return p + len;
 }
 
@@ -233,7 +234,7 @@ quint8 * MsgPackPrivate::unpack_str16(QVariant &v, quint8 *p)
     p++;
     int len = _msgpack_load16(int, p);
     p += 2;
-    v = QString::fromUtf8((char*)p, len);
+    v = QString::fromUtf8(reinterpret_cast<char*>(p), len);
     return p + len;
 }
 
@@ -242,14 +243,14 @@ quint8 * MsgPackPrivate::unpack_str32(QVariant &v, quint8 *p)
     p++;
     int len = _msgpack_load32(int, p);
     p += 4;
-    v = QString::fromUtf8((char*)p, len);
+    v = QString::fromUtf8(reinterpret_cast<char*>(p), len);
     return p + len;
 }
 
 quint8 * MsgPackPrivate::unpack_bin8(QVariant &v, quint8 *p)
 {
     int len = *(++p);
-    v = QByteArray((char*)(++p), len);
+    v = QByteArray(reinterpret_cast<char*>((++p)), len);
     return p + len;
 }
 
@@ -258,7 +259,7 @@ quint8 * MsgPackPrivate::unpack_bin16(QVariant &v, quint8 *p)
     p++;
     int len = _msgpack_load16(int, p);
     p += 2;
-    v = QByteArray((char*)p, len);
+    v = QByteArray(reinterpret_cast<char*>(p), len);
     return p + len;
 }
 
@@ -267,7 +268,7 @@ quint8 * MsgPackPrivate::unpack_bin32(QVariant &v, quint8 *p)
     p++;
     int len = _msgpack_load32(int, p);
     p += 4;
-    v = QByteArray((char*)p, len);
+    v = QByteArray(reinterpret_cast<char*>(p), len);
     return p + len;
 }
 
@@ -346,38 +347,38 @@ quint8 *MsgPackPrivate::unpack_ext(QVariant &v, quint8 *p, qint8 type, quint32 l
         qWarning() << "MsgPack::unpack() unpacker for type" << type << "doesn't exist";
         return p + len;
     }
-    QByteArray data((char *)p, len);
+    QByteArray data(reinterpret_cast<char*>(p), static_cast<int>(len));
     v = user_unpackers[type](data);
     return p + len;
 }
 
 quint8 * MsgPackPrivate::unpack_fixext1(QVariant &v, quint8 *p)
 {
-    qint8 type = *(++p);
+    qint8 type = static_cast<qint8>(*(++p));
     return unpack_ext(v, p + 1, type, 1);
 }
 
 quint8 * MsgPackPrivate::unpack_fixext2(QVariant &v, quint8 *p)
 {
-    qint8 type = *(++p);
+    qint8 type = static_cast<qint8>(*(++p));
     return unpack_ext(v, p + 1, type, 2);
 }
 
 quint8 * MsgPackPrivate::unpack_fixext4(QVariant &v, quint8 *p)
 {
-    qint8 type = *(++p);
+    qint8 type = static_cast<qint8>(*(++p));
     return unpack_ext(v, p + 1, type, 4);
 }
 
 quint8 * MsgPackPrivate::unpack_fixext8(QVariant &v, quint8 *p)
 {
-    qint8 type = *(++p);
+    qint8 type = static_cast<qint8>(*(++p));
     return unpack_ext(v, p + 1, type, 8);
 }
 
 quint8 * MsgPackPrivate::unpack_fixext16(QVariant &v, quint8 *p)
 {
-    qint8 type = *(++p);
+    qint8 type = static_cast<qint8>(*(++p));
     return unpack_ext(v, p + 1, type, 16);
 }
 
@@ -386,7 +387,7 @@ quint8 * MsgPackPrivate::unpack_ext8(QVariant &v, quint8 *p)
     p++;
     quint32 len = *(p);
     p += 1;
-    qint8 type = *(p);
+    qint8 type = static_cast<qint8>(*p);
     return unpack_ext(v, p + 1, type, len);
 }
 
@@ -395,7 +396,7 @@ quint8 * MsgPackPrivate::unpack_ext16(QVariant &v, quint8 *p)
     p++;
     quint32 len = _msgpack_load16(quint32, p);
     p += 2;
-    qint8 type = *(p);
+    qint8 type = static_cast<qint8>(*p);
     return unpack_ext(v, p + 1, type, len);
 }
 
@@ -404,13 +405,13 @@ quint8 * MsgPackPrivate::unpack_ext32(QVariant &v, quint8 *p)
     p++;
     quint32 len = _msgpack_load32(quint32, p);
     p += 4;
-    qint8 type = *(p);
+    qint8 type = static_cast<qint8>(*p);
     return unpack_ext(v, p + 1, type, len);
 }
 
 bool MsgPackPrivate::register_unpacker(qint8 msgpack_type, MsgPack::unpack_user_f unpacker)
 {
-    if (unpacker == 0) {
+    if (unpacker == nullptr) {
         qWarning() << "MsgPack::unpacker for type" << msgpack_type << "is invalid";
         return false;
     }
