@@ -27,12 +27,19 @@ private Q_SLOTS:
 void PackTest::test_nil()
 {
     QVariant v;
-    v.setValue(nullptr);
-    QVERIFY((QMetaType::Type)v.type() == 51); // QMetaType::Nullptr
     QByteArray arr = MsgPack::pack(v);
     quint8 *p = (quint8 *)arr.data();
     QVERIFY(arr.size() == 1);
     QVERIFY(p[0] == 0xc0);
+
+#if QT_VERSION > QT_VERSION_CHECK(5, 8, 0)
+    v.setValue(nullptr);
+    QVERIFY((QMetaType::Type)v.type() == QMetaType::Nullptr);
+    arr = MsgPack::pack(v);
+    p = (quint8 *)arr.data();
+    QVERIFY(arr.size() == 1);
+    QVERIFY(p[0] == 0xc0);
+#endif
 }
 
 void PackTest::test_bool()
