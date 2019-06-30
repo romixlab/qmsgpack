@@ -5,7 +5,6 @@
 #include <QtTest>
 #include "msgpack.h"
 #include <limits>
-#include <QJsonObject>
 
 class PackTest : public QObject
 {
@@ -27,10 +26,9 @@ private Q_SLOTS:
 
 void PackTest::test_nil()
 {
-    QJsonObject j;
-    j.insert("nil", QJsonValue::Null);
-    QVariant v = j.toVariantMap()["nil"];
-    QVERIFY((QMetaType::Type)v.type() == QMetaType::Nullptr);
+    QVariant v;
+    v.setValue(nullptr);
+    QVERIFY((QMetaType::Type)v.type() == 51); // QMetaType::Nullptr
     QByteArray arr = MsgPack::pack(v);
     quint8 *p = (quint8 *)arr.data();
     QVERIFY(arr.size() == 1);
