@@ -20,7 +20,7 @@ QReadWriteLock MsgPackPrivate::packers_lock;
 quint8 *MsgPackPrivate::pack(const QVariant &v, quint8 *p, bool wr, QVector<QByteArray> &user_data)
 {
     QMetaType::Type t = (QMetaType::Type)v.type();
-    if (v.isNull() && !v.isValid())
+    if ((v.isNull() && !v.isValid()) || t == QMetaType::Nullptr)
         p = pack_nil(p, wr);
     else if (t == QMetaType::Int)
         p = pack_int(v.toInt(), p, wr);
