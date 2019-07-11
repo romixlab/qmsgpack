@@ -9,6 +9,21 @@
 
 #include <QIODevice>
 
+class PeekResult {
+public:
+    PeekResult() : status(PeekFailed), msgpackType(0), userType(0), length(0) {}
+
+    quint8 msgpackType;
+    quint8 userType;
+    quint32 length;
+
+    enum Status {
+        PeekOk,
+        PeekFailed
+    };
+    Status status;
+};
+
 class MSGPACK_EXPORT MsgPackStream
 {
 public:
@@ -43,7 +58,8 @@ public:
     MsgPackStream &operator>>(QString &str);
     MsgPackStream &operator>>(QByteArray &array);
     bool readBytes(char *data, qint64 len);
-    bool readExtHeader(quint32 &len);
+    bool readExtHeader(quint32 &len, qint8 &type);
+    bool readArrayHeader(quint32 &len);
 
     MsgPackStream &operator<<(bool b);
     MsgPackStream &operator<<(quint32 u32);
@@ -58,11 +74,17 @@ public:
     bool writeBytes(const char *data, qint64 len);
     bool writeExtHeader(quint32 len, qint8 msgpackType);
 
+    PeekResult peek() const;
+    void setBlocking(bool enabled);
+    void setRawMode(bool enabled);
+
 private:
     QIODevice *dev;
     bool owndev;
     Status q_status;
     bool flushWrites;
+    bool blocking;
+    bool m_rawMode;
 
     bool unpack_longlong(qint64 &i64);
     bool unpack_ulonglong(quint64 &u64);

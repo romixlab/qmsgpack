@@ -26,15 +26,15 @@
         return retVal;
 
 MsgPackStream::MsgPackStream() :
-    dev(0), owndev(false), q_status(Ok), flushWrites(false)
+    dev(0), owndev(false), q_status(Ok), flushWrites(false), blocking(false), m_rawMode(false)
 { }
 
 MsgPackStream::MsgPackStream(QIODevice *d) :
-    dev(d), owndev(false), q_status(Ok), flushWrites(false)
+    dev(d), owndev(false), q_status(Ok), flushWrites(false), blocking(false), m_rawMode(false)
 { }
 
 MsgPackStream::MsgPackStream(QByteArray *a, QIODevice::OpenMode mode) :
-    owndev(true), q_status(Ok), flushWrites(false)
+    owndev(true), q_status(Ok), flushWrites(false), blocking(false), m_rawMode(false)
 {
     QBuffer *buf = new QBuffer(a);
     buf->open(mode);
@@ -42,7 +42,7 @@ MsgPackStream::MsgPackStream(QByteArray *a, QIODevice::OpenMode mode) :
 }
 
 MsgPackStream::MsgPackStream(const QByteArray &a) :
-    owndev(true), q_status(Ok), flushWrites(false)
+    owndev(true), q_status(Ok), flushWrites(false), blocking(false), m_rawMode(false)
 {
     QBuffer *buf = new QBuffer();
     buf->setData(a);
@@ -336,20 +336,25 @@ bool MsgPackStream::readBytes(char *data, qint64 len)
     CHECK_STREAM_PRECOND(false);
     qint64 readed = 0;
     qint64 thisRead = 0;
-    while (readed < len)
-    {
-        thisRead = dev->read(data, (len - readed));
-        if (thisRead < 0)
-            break;
-        /* Advance the read pointer */
-        data += thisRead;
-        readed += thisRead;
-        /* Data might not be available for a bit, so wait before reading again. */
-        if (readed < len) {
-            dev->waitForReadyRead(-1);
+    if (blocking) {
+        while (readed < len)
+        {
+            thisRead = dev->read(data, (len - readed));
+            if (thisRead < 0)
+                break;
+            /* Advance the read pointer */
+            data += thisRead;
+            readed += thisRead;
+            /* Data might not be available for a bit, so wait before reading again. */
+            if (readed < len) {
+                dev->waitForReadyRead(-1);
+            }
         }
+    } else {
+        thisRead = dev->read(data, len);
     }
-    if (thisRead < 0) {
+
+    if (thisRead < 0 || thisRead < len) {
         /* FIXME: There are actual errors that can happen here. */
         setStatus(ReadPastEnd);
         return false;
@@ -357,7 +362,7 @@ bool MsgPackStream::readBytes(char *data, qint64 len)
     return true;
 }
 
-bool MsgPackStream::readExtHeader(quint32 &len)
+bool MsgPackStream::readExtHeader(quint32 &len, qint8 &type)
 {
     CHECK_STREAM_PRECOND(false);
     quint8 d[6];
@@ -369,6 +374,7 @@ bool MsgPackStream::readExtHeader(quint32 &len)
             d[0] <= MsgPack::FirstByte::FIXEX16) {
         len = 1;
         len <<= d[0] - MsgPack::FirstByte::FIXEXT1;
+        type = d[1];
         return true;
     }
 
@@ -381,15 +387,50 @@ bool MsgPackStream::readExtHeader(quint32 &len)
 
     if (d[0] == MsgPack::FirstByte::EXT8) {
         len = d[1];
+        type = d[2];
     } else if (d[0] == MsgPack::FirstByte::EXT16) {
         len = _msgpack_load16(quint32, &d[1]);
+        type = d[3];
     } else if (d[0] == MsgPack::FirstByte::EXT32) {
         len = _msgpack_load32(quint32, &d[1]);
+        type = d[5];
     } else {
         setStatus(ReadCorruptData);
         return false;
     }
     return true;
+}
+
+bool MsgPackStream::readArrayHeader(quint32 &len)
+{
+    CHECK_STREAM_PRECOND(false);
+    quint8 d[5];
+    if (!readBytes((char*)d, 1)) {
+        setStatus(ReadPastEnd);
+        return false;
+    }
+
+    if (d[0] >= MsgPack::FirstByte::FIXARRAY && d[0] <= MsgPack::FirstByte::FIXARRAY_LAST) {
+        len = d[0] & MsgPack::FirstByte::FIXARRAY_MASK;
+        return true;
+    }
+    if (d[0] == MsgPack::FirstByte::ARRAY16 || d[0] == MsgPack::FirstByte::ARRAY32) {
+        quint8 lengthSectionSize = 2;
+        lengthSectionSize <<= d[0] - MsgPack::FirstByte::ARRAY16; // 2 or 4
+        if (!readBytes((char *)d + 1, lengthSectionSize)) {
+            setStatus(ReadPastEnd);
+            return false;
+        }
+        if (d[0] == MsgPack::FirstByte::ARRAY16) {
+            len = _msgpack_load16(quint16, d + 1);
+        } else {
+            len = _msgpack_load32(quint32, d + 1);
+        }
+        return true;
+    }
+
+    setStatus(ReadCorruptData);
+    return false;
 }
 
 MsgPackStream &MsgPackStream::operator<<(bool b)
@@ -571,6 +612,118 @@ bool MsgPackStream::writeExtHeader(quint32 len, qint8 msgpackType)
     }
     return true;
 }
+
+void MsgPackStream::setBlocking(bool enabled)
+{
+    blocking = enabled;
+}
+
+void MsgPackStream::setRawMode(bool enabled)
+{
+    m_rawMode = enabled;
+}
+
+PeekResult MsgPackStream::peek() const
+{
+    if (!dev)
+        return PeekResult();
+    quint8 buf[6];
+    if (dev->peek((char *)buf, 1) != 1)
+        return PeekResult();
+    PeekResult p;
+    if (buf[0] >= MsgPack::FirstByte::FIXEXT1 && buf[0] <= MsgPack::FirstByte::FIXEX16 ) {
+        if (dev->peek((char *)buf, 2) != 2)
+            return PeekResult();
+        p.status = PeekResult::PeekOk;
+        p.msgpackType = MsgPack::FirstByte::FIXEXT1;
+        p.userType = buf[1];
+        return p;
+    }
+    if (buf[0] >= MsgPack::FirstByte::EXT8 && buf[0] <= MsgPack::FirstByte::EXT32) {
+        quint8 lengthSectionSize = 1;
+        lengthSectionSize <<= buf[0] - MsgPack::FirstByte::EXT8; // 1 or 2 or 4
+        if (dev->peek((char*)buf, lengthSectionSize + 2) != lengthSectionSize + 2)
+            return PeekResult();
+        p.status = PeekResult::PeekOk;
+        p.msgpackType = MsgPack::FirstByte::FIXEXT1;
+        p.userType = buf[lengthSectionSize + 1];
+        return p;
+    }
+    if (buf[0] >= MsgPack::FirstByte::FIXARRAY && buf[0] <= MsgPack::FirstByte::FIXARRAY_LAST) {
+        p.status = PeekResult::PeekOk;
+        p.msgpackType = buf[0] & ~MsgPack::FirstByte::FIXARRAY_MASK;
+        p.length = buf[0] & MsgPack::FirstByte::FIXARRAY_MASK;
+        return p;
+    }
+    if (buf[0] == MsgPack::FirstByte::ARRAY16 || buf[0] == MsgPack::FirstByte::ARRAY32) {
+        quint8 lengthSectionSize = 2;
+        lengthSectionSize <<= buf[0] - MsgPack::FirstByte::ARRAY16; // 2 or 4
+        if (dev->peek((char*)buf, lengthSectionSize + 1) != lengthSectionSize + 1)
+            return PeekResult();
+        p.status = PeekResult::PeekOk;
+        p.msgpackType = buf[0];
+        if (buf[0] == MsgPack::FirstByte::ARRAY16) {
+            p.length = _msgpack_load16(quint16, buf + 1);
+        } else {
+            p.length = _msgpack_load32(quint32, buf + 1);
+        }
+        return p;
+    }
+    return PeekResult();
+}
+
+//    PeekResult p;
+//    p.status = PeekResult::Status::PeekOk; // all values is covered below
+//    if ( buf[0] >= MsgPack::FirstByte::FIXMAP && buf[0] <= MsgPack::FirstByte::FIXMAP_LAST) {
+//        p.msgpackType = buf[0] & ~MsgPack::FirstByte::FIXMAP_MASK;
+//        p.length = buf[0] & MsgPack::FirstByte::FIXMAP_MASK;
+//        return p;
+//    }
+
+//    if (buf[0] >= MsgPack::FirstByte::FIXSTR && buf[0] <= MsgPack::FirstByte::FIXSTR_LAST) {
+//        p.msgpackType = buf[0] & ~MsgPack::FirstByte::FIXSTR_MASK;
+//        p.length = buf[0] & MsgPack::FirstByte::FIXSTR_MASK;
+//        return p;
+//    }
+//    if (buf[0] == MsgPack::FirstByte::BIN8 || buf[0] == MsgPack::FirstByte::STR8) {
+
+//    }
+//    if (    buf[0] == MsgPack::FirstByte::NIL ||
+//            buf[0] == MsgPack::FirstByte::NEVER_USED ||
+//            buf[0] == MsgPack::FirstByte::MFALSE ||
+//            buf[0] == MsgPack::FirstByte::MTRUE ||
+//            buf[0] <= MsgPack::FirstByte::POSITIVE_FIXINT ||
+//            buf[0] >= MsgPack::FirstByte::NEGATIVE_FIXINT ) {
+//        p.msgpackType = buf[0];
+//        return p;
+//    }
+//    if (    buf[0] == MsgPack::FirstByte::UINT8 ||
+//            buf[0] == MsgPack::FirstByte::INT8 ) {
+//        p.msgpackType = buf[0];
+//        p.length = 1;
+//        return p;
+//    }
+//    if (    buf[0] == MsgPack::FirstByte::UINT16 ||
+//            buf[0] == MsgPack::FirstByte::INT16 ) {
+//        p.msgpackType = buf[0];
+//        p.length = 2;
+//        return p;
+//    }
+//    if (    buf[0] == MsgPack::FirstByte::UINT32 ||
+//            buf[0] == MsgPack::FirstByte::INT32 ||
+//            MsgPack::FirstByte::FLOAT32 ) {
+//        p.msgpackType = buf[0];
+//        p.length = 4;
+//        return p;
+//    }
+//    if (    buf[0] == MsgPack::FirstByte::UINT64 ||
+//            buf[0] == MsgPack::FirstByte::INT64 ||
+//            MsgPack::FirstByte::FLOAT64 ) {
+//        p.msgpackType = buf[0];
+//        p.length = 8;
+//        return p;
+//    }
+//}
 
 bool MsgPackStream::unpack_longlong(qint64 &i64)
 {

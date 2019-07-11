@@ -74,7 +74,8 @@ MsgPackStream &operator<<(MsgPackStream &s, const QTime &t)
 MsgPackStream& operator>>(MsgPackStream& s, QTime &t)
 {
     quint32 len;
-    s.readExtHeader(len);
+    qint8 type;
+    s.readExtHeader(len, type);
     if (len != 1 && len != 2 && len != 4) {
         s.setStatus(MsgPackStream::ReadCorruptData);
         t = QTime();
@@ -109,7 +110,8 @@ MsgPackStream &operator<<(MsgPackStream &s, const QDate &date)
 MsgPackStream& operator>>(MsgPackStream& s, QDate &date)
 {
     quint32 len;
-    s.readExtHeader(len);
+    qint8 type;
+    s.readExtHeader(len, type);
     if (len != 1 && len != 3) {
         s.setStatus(MsgPackStream::ReadCorruptData);
         date = QDate();
@@ -150,7 +152,8 @@ MsgPackStream &operator<<(MsgPackStream& s, const QDateTime &dt)
 MsgPackStream& operator>>(MsgPackStream& s, QDateTime &dt)
 {
     quint32 len;
-    s.readExtHeader(len);
+    qint8 type;
+    s.readExtHeader(len, type);
     if (len != 1 && len != 5 && len != 7) {
         s.setStatus(MsgPackStream::ReadCorruptData);
         dt = QDateTime();
