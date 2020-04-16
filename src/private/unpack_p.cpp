@@ -130,14 +130,14 @@ quint8 * MsgPackPrivate::unpack_negative_fixint(QVariant &v, quint8 *p)
 
 quint8 * MsgPackPrivate::unpack_uint8(QVariant &v, quint8 *p)
 {
-    v = static_cast<quint8>(*(++p));
+    v = static_cast<quint32>(*(++p));
     return p + 1;
 }
 
 quint8 * MsgPackPrivate::unpack_uint16(QVariant &v, quint8 *p)
 {
     p++;
-    v = _msgpack_load16(quint16, p);
+    v = static_cast<quint32>(_msgpack_load16(quint16, p));
     return p + 2;
 }
 
