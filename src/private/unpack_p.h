@@ -75,6 +75,8 @@ quint8 * unpack_fixext16(QVariant &v, quint8 *p);
 quint8 * unpack_ext8(QVariant &v, quint8 *p);
 quint8 * unpack_ext16(QVariant &v, quint8 *p);
 quint8 * unpack_ext32(QVariant &v, quint8 *p);
+
+quint8 * unpack_timestamp32(QVariant &v, quint8 *p);
 }
 
 #endif // MSGPACK_P_H
