@@ -2,7 +2,11 @@ set(qmsgpack_srcs msgpack.cpp msgpackcommon.cpp msgpackstream.cpp private/pack_p
 set(qmsgpack_headers msgpack.h msgpackstream.h msgpackcommon.h msgpack_export.h endianhelper.h)
 set(qmsgpack_stream_headers stream/location.h stream/time.h stream/geometry.h)
 
-add_library(qmsgpack SHARED ${qmsgpack_srcs} ${qmsgpack_headers})
+if(NOT DEFINED COMPILE_TYPE)
+  set(COMPILE_TYPE SHARED)
+endif(NOT DEFINED COMPILE_TYPE)
+
+add_library(qmsgpack ${COMPILE_TYPE} ${qmsgpack_srcs} ${qmsgpack_headers})
 
 if (Qt5Core_FOUND)
 	target_link_libraries(qmsgpack Qt5::Core)
