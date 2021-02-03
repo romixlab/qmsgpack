@@ -4,6 +4,7 @@
 #include "../endianhelper.h"
 
 #include <QByteArray>
+#include <QDateTime>
 #include <QDebug>
 #include <QMap>
 #include <QReadLocker>
@@ -367,6 +368,9 @@ quint8 * MsgPackPrivate::unpack_fixext2(QVariant &v, quint8 *p)
 quint8 * MsgPackPrivate::unpack_fixext4(QVariant &v, quint8 *p)
 {
     qint8 type = static_cast<qint8>(*(++p));
+    if (type == -1) {
+        return unpack_timestamp32(v, p + 1);
+    }
     return unpack_ext(v, p + 1, type, 4);
 }
 
@@ -407,6 +411,12 @@ quint8 * MsgPackPrivate::unpack_ext32(QVariant &v, quint8 *p)
     p += 4;
     qint8 type = static_cast<qint8>(*p);
     return unpack_ext(v, p + 1, type, len);
+}
+
+quint8 * MsgPackPrivate::unpack_timestamp32(QVariant &v, quint8 *p)
+{
+    v = QDateTime::fromSecsSinceEpoch(_msgpack_load32(quint32, p));
+    return p + 4;
 }
 
 bool MsgPackPrivate::register_unpacker(qint8 msgpack_type, MsgPack::unpack_user_f unpacker)

@@ -21,12 +21,12 @@ HEADERS += \
 !contains(DEFINES, MSGPACK_NO_PACKTYPES) {
     SOURCES += \
         $$PWD/src/private/qt_types_p.cpp \
-        $$PWD/src/stream/time.cpp \
+        $$PWD/src/stream/datetime.cpp \
         $$PWD/src/stream/geometry.cpp
 
     HEADERS += \
         $$PWD/src/private/qt_types_p.h \
-        $$PWD/src/stream/time.h \
+        $$PWD/src/stream/datetime.h \
         $$PWD/src/stream/geometry.h
 
     qtHaveModule(gui) {
