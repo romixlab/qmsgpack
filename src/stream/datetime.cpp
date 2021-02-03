@@ -1,6 +1,6 @@
 // This is an open source non-commercial project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
-#include "time.h"
+#include "datetime.h"
 #include "../msgpack.h"
 
 void MsgPackPrivate::pack_qtime_raw(const QTime &time, quint8 *p)

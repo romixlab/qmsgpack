@@ -1,5 +1,5 @@
-#ifndef TIME_H
-#define TIME_H
+#ifndef DATETIME_H
+#define DATETIME_H
 
 #include "../msgpack_export.h"
 #include "../msgpackstream.h"
@@ -22,5 +22,5 @@ void pack_qdate_raw(const QDate &date, quint8 *p);
 QDate unpack_qdate_raw(quint8 *p);
 }
 
-#endif // TIME_H
+#endif // DATETIME_H
 
